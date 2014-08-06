@@ -16,3 +16,4 @@ annotations/
 .idea/
 *.iml
 
+logs/
