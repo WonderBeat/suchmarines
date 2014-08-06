@@ -16,7 +16,7 @@ fun main(args : Array<String>) {
     print("Running...")
     game.start()
 
-    FileOutputStream("dump/" + DateTime.now()!!.toString("MMddhhmmss") + ".msp").write(gameLogger.dump())
+    FileOutputStream("dump/" + DateTime.now()!!.toString("MMddhhmmss") + ".dmp").write(gameLogger.dump())
 }
 
 fun Logic.and(other: Logic): Logic =
