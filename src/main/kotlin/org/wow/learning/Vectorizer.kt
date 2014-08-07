@@ -1,8 +1,8 @@
 package org.wow.learning
 
 import org.apache.mahout.math.Vector
-import javafx.animation.Transition
+import org.wow.evaluation.Transition
 
 public trait Vectorizer {
-    fun vectorize(move: Transition):Vector
+    fun vectorize(move: Transition): List<Vector>
 }
