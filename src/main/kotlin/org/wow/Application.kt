@@ -12,7 +12,7 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory
 fun main(args : Array<String>) {
     val objectMapper = ObjectMapper(SmileFactory())
     val gameLogger = GameLogger(objectMapper.writer()!!)
-    val game = SocketGame("10.20.60.2", 10040, "jat5s65p3lypamzg3ztzjyu2rt4tgqt1", gameLogger)
+    val game = SocketGame("176.192.95.4", 10040, "jat5s65p3lypamzg3ztzjyu2rt4tgqt1", gameLogger)
     print("Running....")
     game.start()
 
