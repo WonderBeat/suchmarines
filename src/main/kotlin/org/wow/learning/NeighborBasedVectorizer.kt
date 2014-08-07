@@ -5,6 +5,9 @@ import org.apache.mahout.math.RandomAccessSparseVector
 import org.apache.mahout.vectorizer.encoders.ContinuousValueEncoder
 import org.wow.evaluation.Transition
 
+/**
+ * Creates vectors for each user planet based on metrics connected to neighbors
+ */
 public class NeighborBasedVectorizer: Vectorizer {
 
     val enemiesAround = ContinuousValueEncoder("enemies")
