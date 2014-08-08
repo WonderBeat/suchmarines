@@ -4,7 +4,7 @@ import com.epam.starwors.galaxy.PlanetType
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.smile.SmileFactory
 import org.wow.logger.GameLogger
-import org.wow.logger.SerializedPlanet
+import org.wow.logger.SerializedWorld
 import spock.lang.Specification
 
 class GameLoggerTest extends Specification {
@@ -18,11 +18,11 @@ class GameLoggerTest extends Specification {
         when:
         logger.step([new Planet("12", "", 12, PlanetType.TYPE_B, [])])
         def out = logger.dump()
-        SerializedPlanet[] world = objectMapper.readValue(out, SerializedPlanet[].class)
+        SerializedWorld[] world = objectMapper.readValue(out, SerializedWorld[].class)
 
         then:
         assert world != null
-        assert world.first().id == "12"
+        assert world.first().planets.first().id == "12"
     }
 
 
@@ -38,11 +38,11 @@ class GameLoggerTest extends Specification {
         when:
         logger.step([planetOne, planetTwo])
         def out = logger.dump()
-        SerializedPlanet[] world = objectMapper.readValue(out, SerializedPlanet[].class)
+        SerializedWorld[] world = objectMapper.readValue(out, SerializedWorld[].class)
 
         then:
         assert world != null
-        assert world.first().id == "12"
+        assert world.first().planets.first().id == "12"
     }
 
 

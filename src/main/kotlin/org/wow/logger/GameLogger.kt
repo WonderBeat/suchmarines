@@ -6,25 +6,28 @@ import com.epam.starwors.galaxy.Move
 import com.fasterxml.jackson.databind.ObjectWriter
 import com.epam.starwors.galaxy.PlanetType
 
-data class SerializedPlanet(var id: String = "",
-                            var owner: String = "",
-                            var units: Int = 0,
-                            var `type`: PlanetType = PlanetType.TYPE_A,
-                            var neighbours: List<String> = listOf())
+
+data class SerializedWorld(val planets: List<SerializedPlanet> = listOf())
+
+data class SerializedPlanet(val id: String = "",
+                            val owner: String = "",
+                            val units: Int = 0,
+                            val `type`: PlanetType = PlanetType.TYPE_A,
+                            val neighbours: List<String> = listOf())
 
 
 public class GameLogger(val serializer: ObjectWriter): Logic {
 
-    var states = listOf<SerializedPlanet>()
+    var states = listOf<SerializedWorld>()
 
     override fun step(world: Collection<Planet>?): MutableCollection<Move>? {
-        states = states.plus(world!!.map {
+        states = states.plus(SerializedWorld(world!!.map {
             SerializedPlanet(it.getId()!!,
                     it.getOwner()!!,
                     it.getUnits(),
                     it.getType()!!,
                     it.getNeighbours()!!.map { it.getId()!! })
-        })
+        }))
         return arrayListOf()
     }
 
