@@ -30,8 +30,8 @@ class ClassificationExampleTest extends Specification {
         algo.close()
         def learner = algo.getBest().getPayload().getLearner()
         def goal = new RandomAccessSparseVector(2)
-        mood.addToVector(null as byte[], 99d, goal)
-        weight.addToVector(null as byte[], 40, goal)
+        mood.addToVector(null as byte[], 110d, goal)
+        weight.addToVector(null as byte[], 55, goal)
 
         def result = learner.classifyFull(goal)
         def resultIndex = result.maxValueIndex()
