@@ -11,10 +11,10 @@ public class BestTransitionsFinder {
         val players = game.first().planets!!.map { it.getOwner() }.distinct()
         val transitions = pairs(game).map { pair ->
             players.map { player ->
-                Transition(pair.first, pair.second, player!!, evaluator.difference(player, pair.first, pair.second))
+                Transition(pair.first, pair.second, player!!)
             }
         }
-        return transitions.map { it.maxBy { it.playersPowerDifference }!! }
+        return transitions.map { it.maxBy { evaluator.difference(it.playerName, it.sourceWorld, it.resultWorld) }!! }
     }
 
     private fun pairs(game: Array<World>): List<Pair<World, World>> = game.take(game.size - 1).zip(game.drop(1))
