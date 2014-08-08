@@ -18,11 +18,10 @@ fun serializedWorldToWorld(serialized: SerializedWorld): World {
     })
 }
 
-public class LogsParser {
+public class LogsParser(val objectMapper: ObjectMapper) {
 
     fun parse(sourceDirectoryName: String): Collection<List<World>> {
-        val sourceDirectory = ClassPathResource(sourceDirectoryName).getFile()!!;
-        val objectMapper = ObjectMapper(SmileFactory())
+        val sourceDirectory = ClassPathResource(sourceDirectoryName).getFile()!!
         val files: Array<File> = sourceDirectory.listFiles { it.extension.equals(".dmp") }!!
         return files.map {
             objectMapper.readValue(it.readBytes(), javaClass<Array<SerializedWorld>>())!!.map { serializedWorldToWorld(it) }
