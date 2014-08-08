@@ -1,5 +1,6 @@
 package org.wow.parser
 
+import org.wow.logger.LogsParser
 import spock.lang.Ignore
 import spock.lang.Specification
 

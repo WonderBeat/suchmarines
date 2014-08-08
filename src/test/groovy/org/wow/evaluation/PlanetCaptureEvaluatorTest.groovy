@@ -17,7 +17,6 @@ class PlanetCaptureEvaluatorTest extends Specification {
         def planet = new Planet("12", "player", 100, PlanetType.TYPE_D, Collections.emptyList())
         def world = new World([planet])
         def power = evaluator.evaluate("player", world)
-
         then:
         assert power > 0
     }
