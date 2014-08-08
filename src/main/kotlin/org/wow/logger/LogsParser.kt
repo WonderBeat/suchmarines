@@ -10,10 +10,10 @@ fun serializedWorldToWorld(serialized: SerializedWorld): World {
     val withoutNeighborns = World(planets = serialized.planets.map { Planet(it.id, it.owner, it.units, it.`type`, listOf()) })
     val planetPairs = serialized.planets.map { planet -> Pair(planet, withoutNeighborns.planets!!.firstOrNull { it.getId() == planet.id }) }
     return World(planetPairs.map { pair ->
-        val serialized = pair.first
+        val serializedPlanet = pair.first
         val original = pair.second!!
-        val neibhorns = serialized.neighbours.map { id -> withoutNeighborns.planets!!.firstOrNull { it.getId() == id } }
-        neibhorns.forEach { original.addNeighbours(it) }
+        val neighbors = serializedPlanet.neighbours.map { id -> withoutNeighborns.planets!!.firstOrNull { it.getId() == id } }
+        neighbors.forEach { original.addNeighbours(it) }
         original
     })
 }
