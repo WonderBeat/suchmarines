@@ -3,7 +3,7 @@ package org.wow.evaluation.learning.predict
 import com.epam.starwors.galaxy.Planet
 import kotlin.Function1
 import org.apache.mahout.math.RandomAccessSparseVector
-import org.wow.learning.Vectorizer
+import org.wow.learning.vectorizers.Vectorizer
 import org.wow.learning.predict.InOutPlanetPredictor
 import org.wow.learning.predict.PlanetMovePrediction
 import spock.lang.Specification

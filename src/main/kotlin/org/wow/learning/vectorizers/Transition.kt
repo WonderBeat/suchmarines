@@ -1,4 +1,4 @@
-package org.wow.evaluation
+package org.wow.learning.vectorizers
 
 import org.wow.logger.World
 
