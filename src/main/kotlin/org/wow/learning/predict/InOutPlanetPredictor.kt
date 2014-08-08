@@ -2,12 +2,13 @@ package org.wow.learning.predict
 
 import com.epam.starwors.galaxy.Planet
 import org.apache.mahout.math.Vector
+import org.wow.learning.vectorizers.Vectorizer
 
 
 data class PlanetMovePrediction(val out: Int = 0, val `in`: Int = 0)
 
 public class InOutPlanetPredictor(val classifier: (Vector) -> Vector,
-                                  val planetVectorizer: org.wow.learning.vectorizers.Vectorizer<Planet, Vector>
+                                  val planetVectorizer: Vectorizer<Planet, Vector>
                                   ): Predictor<PlanetMovePrediction, Planet> {
 
 
