@@ -8,7 +8,7 @@ import spock.lang.Specification
  *
  */
 class BestTransitionsFinderTest extends Specification {
-    def 'zero difference for same world'() {
+    def 'same world'() {
         given:
         def evaluator = new UserPowerEvaluator();
         def planet = new Planet("12", "player", 100, PlanetType.TYPE_D, Collections.emptyList())
@@ -21,10 +21,9 @@ class BestTransitionsFinderTest extends Specification {
         then:
         assert transitions != null
         assert transitions.size() == 1
-        assert Double.compare(transitions.first().playersPowerDifference, 0.0) == 0
     }
 
-    def 'non-zero difference for different worlds'() {
+    def 'different worlds'() {
         given:
         def evaluator = new UserPowerEvaluator();
         def planet1 = new Planet("12", "player", 100, PlanetType.TYPE_D, Collections.emptyList())
@@ -39,6 +38,5 @@ class BestTransitionsFinderTest extends Specification {
         then:
         assert transitions != null
         assert transitions.size() == 1
-        assert Double.compare(transitions.first().playersPowerDifference, 0.0) != 0
     }
 }
