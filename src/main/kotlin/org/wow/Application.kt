@@ -7,17 +7,70 @@ import org.joda.time.DateTime
 import java.io.FileOutputStream
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.smile.SmileFactory
+import org.wow.logger.LogsParser
+import org.wow.evaluation.transition.BestTransitionsFinder
+import org.wow.evaluation.UserPowerEvaluator
+import org.wow.learning.Categorizator
+import org.wow.learning.MahoutLearner
+import org.apache.mahout.classifier.sgd.AdaptiveLogisticRegression
+import org.apache.mahout.classifier.sgd.L1
+import org.wow.learning.vectorizers.planet.NeighborBasedPlanetVectorizer
+import org.wow.learning.vectorizers.planet.PlanetTransition
+import org.wow.learning.predict.InOutPlanetPredictor
+import org.apache.mahout.math.Vector
+import org.wow.logger.World
+import com.epam.starwors.galaxy.Move
 
-import org.springframework.core.io.FileSystemResource
 import java.io.File
-import org.wow.java.logics.UniformAttack
+import org.wow.learning.vectorizers.planet.PlanetState
 
 
 fun main(args : Array<String>) {
+    val username = "WooDmaN"
     val objectMapper = ObjectMapper(SmileFactory())
+    val bestFinder = BestTransitionsFinder(UserPowerEvaluator())
+    val elearner = AdaptiveLogisticRegression(200, 4, L1())
+    val mahoutLearner = MahoutLearner(elearner)
+    val bestPlanetTransitions = LogsParser(objectMapper).parse("dump/").flatMap { game ->
+        val bestMoves = bestFinder.findBestTransitions(game)
+        bestMoves.flatMap { transition ->
+            transition.sourceWorld.planets!!.filter { it.getOwner() == transition.playerName }.map {
+                PlanetTransition(PlanetState(transition.sourceWorld, it), PlanetState(transition.resultWorld, it))
+            }
+        }
+    }
+
+    val categorizator = Categorizator({ 142 }, NeighborBasedPlanetVectorizer(), mahoutLearner)
+    val database =  categorizator.learn(bestPlanetTransitions.map { it.from })
+
+    var predictor = InOutPlanetPredictor(
+            {(v: Vector) -> elearner.getBest()!!.getPayload()!!.getLearner()!!.classifyFull(v)!! },
+            NeighborBasedPlanetVectorizer())
+
+    var logic = Logic { planets ->
+        val predicts = planets!!.filter { it.getOwner() == username }.map { Pair(it, predictor.predict(it, World(planets))) }
+        predicts.map { planetPredict ->
+            val planet = planetPredict.first
+            val predict = planetPredict.second
+            when {
+                    predict.`in` > 0 -> Move(planet, planet, 0)
+                else -> {
+                    var firstEnemy = planet.getNeighbours()!!.filter { it.getOwner() != username }.first
+                    if(firstEnemy != null) {
+                        Move(planet, firstEnemy, predict.out)
+                    } else {
+                        null
+                    }
+
+                }
+        }
+      }.filterNotNull().toArrayList()
+    }
+
     val gameLogger = GameLogger(objectMapper.writer()!!)
 
-    val game = SocketGame("176.192.95.4", 10040, "wpm5dqloq5s6kzxem4j5ixaw4tlu6dee", gameLogger.and(UniformAttack("WooDmaN")))
+
+    val game = SocketGame("176.192.95.4", 10040, "wpm5dqloq5s6kzxem4j5ixaw4tlu6dee", gameLogger.and(logic))
     print("Running....")
     game.start()
 

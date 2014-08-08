@@ -16,7 +16,7 @@ class BestTransitionsFinderTest extends Specification {
         def game = [ world, world ]
 
         when:
-        def transitions = new BestTransitionsFinder().findBestTransitions(game as World[], evaluator)
+        def transitions = new BestTransitionsFinder(evaluator).findBestTransitions(game)
 
         then:
         assert transitions != null
@@ -33,7 +33,7 @@ class BestTransitionsFinderTest extends Specification {
         def game = [world1, world2]
 
         when:
-        def transitions = new BestTransitionsFinder().findBestTransitions(game as World[], evaluator)
+        def transitions = new BestTransitionsFinder(evaluator).findBestTransitions(game)
 
         then:
         assert transitions != null

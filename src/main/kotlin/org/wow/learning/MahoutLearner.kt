@@ -13,8 +13,11 @@ public class MahoutLearner(private val learner: AdaptiveLogisticRegression): Lea
 
     override fun learn(data: List<LearningPair>): DataOutput {
         data.forEach { learner.train(it.actual, it.vector) }
-        val outputBuffer = DataOutputStream(ByteOutputStream())
+        val byteOutputStream = ByteOutputStream()
+        val outputBuffer = DataOutputStream(byteOutputStream)
+        learner.close()
         learner.getBest()!!.getPayload()!!.getLearner()!!.write(outputBuffer)
+        outputBuffer.flush()
         return outputBuffer
     }
 }

@@ -23,7 +23,6 @@ public class UserPowerEvaluator : Evaluator {
             planets++
             regenerationRate += it.getType()!!.getIncrement()
         }
-        regenerationRate /= planets
         return unitsCoefficient * units + planetsCoefficient * planets + regenerationRateCoefficient * regenerationRate
     }
 
