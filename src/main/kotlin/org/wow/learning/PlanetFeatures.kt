@@ -3,7 +3,9 @@ package org.wow.learning
 import org.wow.logger.World
 import com.epam.starwors.galaxy.Planet
 
-
+/**
+* Big enemies Planet around
+* */
 /**
  * Enemies around percentage
  */
