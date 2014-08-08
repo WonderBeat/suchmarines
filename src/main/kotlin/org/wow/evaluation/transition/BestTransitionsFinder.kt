@@ -7,7 +7,7 @@ import org.wow.evaluation.Evaluator
  *
  */
 public class BestTransitionsFinder {
-    fun findBestTransitions(game: Collection<World>, evaluator: Evaluator): Collection<Transition> {
+    fun findBestTransitions(game: Array<World>, evaluator: Evaluator): Collection<Transition> {
         val players = game.first().planets!!.map { it.getOwner() }.distinct()
         val transitions = pairs(game).map { pair ->
             players.map { player ->
@@ -17,5 +17,5 @@ public class BestTransitionsFinder {
         return transitions.map { it.maxBy { it.playersPowerDifference }!! }
     }
 
-    private fun pairs(game: Collection<World>): List<Pair<World, World>> = game.take(game.size - 1).zip(game.drop(1))
+    private fun pairs(game: Array<World>): List<Pair<World, World>> = game.take(game.size - 1).zip(game.drop(1))
 }
