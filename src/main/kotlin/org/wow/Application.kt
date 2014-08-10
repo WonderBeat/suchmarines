@@ -17,8 +17,6 @@ import org.wow.learning.vectorizers.planet.PlanetVectorizer
 import org.wow.learning.vectorizers.planet.PlanetTransition
 import org.wow.learning.predict.InOutPlanetPredictor
 import org.apache.mahout.math.Vector
-import org.wow.logger.World
-import com.epam.starwors.galaxy.Move
 
 import java.io.File
 import org.wow.learning.vectorizers.planet.PlanetState
@@ -28,7 +26,7 @@ import org.wow.learning.enemiesAround
 import org.wow.learning.friendsAround
 import org.wow.learning.planetPower
 import org.apache.mahout.vectorizer.encoders.ConstantValueEncoder
-import org.apache.mahout.classifier.OnlineLearner
+import org.wow.logic.PredictionAwareBot
 
 fun main(args : Array<String>) {
     val username = "WooDmaN"
@@ -43,8 +41,7 @@ fun main(args : Array<String>) {
 
     val bestFinder = BestTransitionsFinder(UserPowerEvaluator())
     val bestPlanetTransitions = LogsParser(objectMapper).parse("dump/").flatMap { game ->
-        val bestMoves = bestFinder.findBestTransitions(game)
-        bestMoves.flatMap { transition ->
+        bestFinder.findBestTransitions(game).flatMap { transition ->
             transition.sourceWorld.planets!!.filter { it.getOwner() == transition.playerName }.map {
                 PlanetTransition(PlanetState(transition.sourceWorld, it), PlanetState(transition.resultWorld, it))
             }
@@ -55,35 +52,17 @@ fun main(args : Array<String>) {
             AdaptiveLogisticRegression(200, planetFeatoresExtractors.size, L1()))
     val trainedMachine =  categorizator.learn(bestPlanetTransitions.map { it.from })
     trainedMachine.close()
+    val trainedClassifier = trainedMachine.getBest()!!.getPayload()!!.getLearner()!!
 
     var predictor = InOutPlanetPredictor(
-            {(v: Vector) -> trainedMachine.getBest()!!.getPayload()!!.getLearner()!!.classifyFull(v)!! },
+            {(v: Vector) -> trainedClassifier.classifyFull(v)!! },
             planetVectorizer)
-
-    var logic = Logic { planets ->
-        val predicts = planets!!.filter { it.getOwner() == username }.map { Pair(it, predictor.predict(it, World(planets))) }
-        predicts.map { planetPredict ->
-            val planet = planetPredict.first
-            val predict = planetPredict.second
-            when {
-                    predict.`in` > 0 -> Move(planet, planet, 0)
-                else -> {
-                    var firstEnemy = planet.getNeighbours()!!.filter { it.getOwner() != username }.first
-                    if(firstEnemy != null) {
-                        Move(planet, firstEnemy, predict.out)
-                    } else {
-                        null
-                    }
-
-                }
-        }
-      }.filterNotNull().toArrayList()
-    }
 
     val gameLogger = GameLogger(objectMapper.writer()!!)
 
 
-    val game = SocketGame("176.192.95.4", 10040, "wpm5dqloq5s6kzxem4j5ixaw4tlu6dee", gameLogger.and(logic))
+    val game = SocketGame("176.192.95.4", 10040, "wpm5dqloq5s6kzxem4j5ixaw4tlu6dee",
+            gameLogger.and(PredictionAwareBot(username, predictor)))
     print("Running....")
     game.start()
 

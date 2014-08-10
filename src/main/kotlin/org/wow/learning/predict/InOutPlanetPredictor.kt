@@ -7,6 +7,9 @@ import org.wow.logger.World
 import org.wow.learning.vectorizers.planet.PlanetState
 
 
+/**
+ * Percent of your users, that should be moved in or out planet
+ */
 data class PlanetMovePrediction(val out: Int = 0, val `in`: Int = 0)
 
 public class InOutPlanetPredictor(val classifier: (Vector) -> Vector,
