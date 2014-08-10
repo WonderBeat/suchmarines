@@ -1,4 +1,4 @@
-package org.wow.java.logics;
+package org.wow.logic;
 
 import com.epam.starwors.bot.Logic;
 import com.epam.starwors.galaxy.Move;
@@ -8,9 +8,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Created by WooDmaN on 07.08.2014.
- */
 public class UniformAttack implements Logic {
     String userName;
 
