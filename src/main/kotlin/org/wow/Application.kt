@@ -10,7 +10,7 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory
 import org.wow.logger.LogsParser
 import org.wow.evaluation.transition.BestTransitionsFinder
 import org.wow.evaluation.UserPowerEvaluator
-import org.wow.learning.Categorizator
+import org.wow.learning.MachineLearner
 import org.apache.mahout.classifier.sgd.AdaptiveLogisticRegression
 import org.apache.mahout.classifier.sgd.L1
 import org.wow.learning.vectorizers.planet.PlanetVectorizer
@@ -27,6 +27,7 @@ import org.wow.learning.friendsAround
 import org.wow.learning.planetPower
 import org.apache.mahout.vectorizer.encoders.ConstantValueEncoder
 import org.wow.logic.PredictionAwareBot
+import org.wow.learning.vectorizers.Vectorizer
 
 fun main(args : Array<String>) {
     val username = "WooDmaN"
@@ -38,19 +39,23 @@ fun main(args : Array<String>) {
             FeatureExtractor(ConstantValueEncoder("planet-size"), {s -> s.planet.getType()!!.getLimit().toDouble()})
     )
     val planetVectorizer = PlanetVectorizer(planetFeatoresExtractors)
+    val firstStateInTransitionVectorizer = object: Vectorizer<PlanetTransition, Vector> {
+        override fun vectorize(input: PlanetTransition) = planetVectorizer.vectorize(input.from)
+    }
 
     val bestFinder = BestTransitionsFinder(UserPowerEvaluator())
     val bestPlanetTransitions = LogsParser(objectMapper).parse("dump/").flatMap { game ->
         bestFinder.findBestTransitions(game).flatMap { transition ->
-            transition.sourceWorld.planets!!.filter { it.getOwner() == transition.playerName }.map {
-                PlanetTransition(PlanetState(transition.sourceWorld, it), PlanetState(transition.resultWorld, it))
+            transition.sourceWorld.planets!!.filter { it.getOwner() == transition.playerName  }.map {
+                sourcePlanet -> PlanetTransition(PlanetState(transition.sourceWorld, sourcePlanet),
+                        PlanetState(transition.resultWorld, transition.resultWorld.planets!!.first { it.getId() ==
+                                sourcePlanet.getId()}))
             }
         }
     }
-
-    val categorizator = Categorizator({ 142 }, planetVectorizer ,
+    val learner = MachineLearner({ 142 }, firstStateInTransitionVectorizer,
             AdaptiveLogisticRegression(200, planetFeatoresExtractors.size, L1()))
-    val trainedMachine =  categorizator.learn(bestPlanetTransitions.map { it.from })
+    val trainedMachine =  learner.learn(bestPlanetTransitions)
     trainedMachine.close()
     val trainedClassifier = trainedMachine.getBest()!!.getPayload()!!.getLearner()!!
 

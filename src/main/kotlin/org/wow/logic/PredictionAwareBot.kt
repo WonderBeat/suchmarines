@@ -31,7 +31,7 @@ public class PredictionAwareBot(val username: String,
     }
 
     fun predictPlanets(planets: Collection<Planet>): List<Pair<Planet, PlanetMovePrediction>> {
-        return planets!!.filter { it.getOwner() == username }.map {
+        return planets.filter { it.getOwner() == username }.map {
             Pair(it,
                     inOutPredictor.predict(it, World(planets)))
         }

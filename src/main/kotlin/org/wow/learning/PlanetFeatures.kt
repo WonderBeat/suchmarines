@@ -3,6 +3,11 @@ package org.wow.learning
 import org.wow.logger.World
 import com.epam.starwors.galaxy.Planet
 
+fun Planet.enemiesNeighbours(): List<Planet> = this.getNeighbours()!!.filter { it.getOwner() != this.getOwner() && it
+        .getOwner().isNotEmpty() }
+
+fun Planet.friendsNeighbours(): List<Planet> = this.getNeighbours()!!.filter { it.getOwner() == this.getOwner() }
+
 /**
 * Big enemies Planet around
 * */
@@ -11,9 +16,10 @@ import com.epam.starwors.galaxy.Planet
  */
 fun Planet.enemiesAround(): Int {
     val allUnits = this.getNeighbours()!!.sumUnits() + this.getUnits()
-    val enemyUnits = this.getNeighbours()!!.filter { !it.getOwner().equals(this.getOwner()) }.sumUnits()
+    val enemyUnits = this.enemiesNeighbours().sumUnits()
     return 100 * enemyUnits / allUnits
 }
+
 fun Collection<Planet>.sumUnits(): Int = this.fold(0) { acc, it -> acc + it.getUnits() }
 
 /**
@@ -21,7 +27,7 @@ fun Collection<Planet>.sumUnits(): Int = this.fold(0) { acc, it -> acc + it.getU
  */
 fun Planet.friendsAround(): Int {
     val allUnits = this.getNeighbours()!!.sumUnits() + this.getUnits()
-    val friendUnits = this.getNeighbours()!!.filter { it.getOwner().equals(this.getOwner()) }.sumUnits() + this.getUnits()
+    val friendUnits = this.friendsNeighbours().sumUnits() + this.getUnits()
     return 100 * friendUnits / allUnits
 }
 

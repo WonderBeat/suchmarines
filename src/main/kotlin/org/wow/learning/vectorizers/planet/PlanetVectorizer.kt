@@ -17,7 +17,6 @@ public data class PlanetTransition(val from: PlanetState, val to: PlanetState)
 
 public data class FeatureExtractor(val encoder: FeatureVectorEncoder, val weightEvaluator: (PlanetState) -> Double)
 
-
 public class PlanetVectorizer(private val featuresExtractors: List<FeatureExtractor>) : Vectorizer<PlanetState,
         Vector> {
 
