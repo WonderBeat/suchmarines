@@ -11,7 +11,6 @@ import org.wow.logger.LogsParser
 import org.wow.evaluation.transition.BestTransitionsFinder
 import org.wow.evaluation.UserPowerEvaluator
 import org.wow.learning.Categorizator
-import org.wow.learning.MahoutLearner
 import org.apache.mahout.classifier.sgd.AdaptiveLogisticRegression
 import org.apache.mahout.classifier.sgd.L1
 import org.wow.learning.vectorizers.planet.PlanetVectorizer
@@ -29,10 +28,11 @@ import org.wow.learning.enemiesAround
 import org.wow.learning.friendsAround
 import org.wow.learning.planetPower
 import org.apache.mahout.vectorizer.encoders.ConstantValueEncoder
-
+import org.apache.mahout.classifier.OnlineLearner
 
 fun main(args : Array<String>) {
     val username = "WooDmaN"
+    val objectMapper = ObjectMapper(SmileFactory())
     val planetFeatoresExtractors = listOf(
             FeatureExtractor(ContinuousValueEncoder("enemies-around"), {state -> state.planet.enemiesAround(state
                     .world).toDouble()}),
@@ -42,10 +42,7 @@ fun main(args : Array<String>) {
     )
     val planetVectorizer = PlanetVectorizer(planetFeatoresExtractors)
 
-    val objectMapper = ObjectMapper(SmileFactory())
     val bestFinder = BestTransitionsFinder(UserPowerEvaluator())
-    val elearner = AdaptiveLogisticRegression(200, planetFeatoresExtractors.size, L1())
-    val mahoutLearner = MahoutLearner(elearner)
     val bestPlanetTransitions = LogsParser(objectMapper).parse("dump/").flatMap { game ->
         val bestMoves = bestFinder.findBestTransitions(game)
         bestMoves.flatMap { transition ->
@@ -55,11 +52,13 @@ fun main(args : Array<String>) {
         }
     }
 
-    val categorizator = Categorizator({ 142 }, planetVectorizer , mahoutLearner)
-    val database =  categorizator.learn(bestPlanetTransitions.map { it.from })
+    val categorizator = Categorizator({ 142 }, planetVectorizer ,
+            AdaptiveLogisticRegression(200, planetFeatoresExtractors.size, L1()))
+    val trainedMachine =  categorizator.learn(bestPlanetTransitions.map { it.from })
+    trainedMachine.close()
 
     var predictor = InOutPlanetPredictor(
-            {(v: Vector) -> elearner.getBest()!!.getPayload()!!.getLearner()!!.classifyFull(v)!! },
+            {(v: Vector) -> trainedMachine.getBest()!!.getPayload()!!.getLearner()!!.classifyFull(v)!! },
             planetVectorizer)
 
     var logic = Logic { planets ->

@@ -4,6 +4,7 @@ import org.apache.mahout.math.Vector
 import java.io.DataOutput
 
 
-public trait Learner <T> {
-    fun learn(data: List<T>): DataOutput
+public trait Learner <T, K> {
+
+    fun learn(data: List<T>): K
 }
