@@ -3,9 +3,7 @@ package org.wow.evaluation.transition
 import org.wow.logger.World
 import org.wow.evaluation.Evaluator
 
-/**
- *
- */
+
 public class BestTransitionsFinder(val evaluator: Evaluator) {
     fun findBestTransitions(game: Collection<World>): Collection<Transition> {
         val players = game.first().planets!!.map { it.getOwner() }.filterNot { it!!.isEmpty() }.distinct()
