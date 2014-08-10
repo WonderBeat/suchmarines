@@ -14,7 +14,7 @@ import org.wow.learning.Categorizator
 import org.wow.learning.MahoutLearner
 import org.apache.mahout.classifier.sgd.AdaptiveLogisticRegression
 import org.apache.mahout.classifier.sgd.L1
-import org.wow.learning.vectorizers.planet.NeighborBasedPlanetVectorizer
+import org.wow.learning.vectorizers.planet.PlanetVectorizer
 import org.wow.learning.vectorizers.planet.PlanetTransition
 import org.wow.learning.predict.InOutPlanetPredictor
 import org.apache.mahout.math.Vector
@@ -23,13 +23,28 @@ import com.epam.starwors.galaxy.Move
 
 import java.io.File
 import org.wow.learning.vectorizers.planet.PlanetState
+import org.apache.mahout.vectorizer.encoders.ContinuousValueEncoder
+import org.wow.learning.vectorizers.planet.FeatureExtractor
+import org.wow.learning.enemiesAround
+import org.wow.learning.friendsAround
+import org.wow.learning.planetPower
+import org.apache.mahout.vectorizer.encoders.ConstantValueEncoder
 
 
 fun main(args : Array<String>) {
     val username = "WooDmaN"
+    val planetFeatoresExtractors = listOf(
+            FeatureExtractor(ContinuousValueEncoder("enemies-around"), {state -> state.planet.enemiesAround(state
+                    .world).toDouble()}),
+            FeatureExtractor(ContinuousValueEncoder("friends-around"), {s -> s.planet.friendsAround(s.world).toDouble()}),
+            FeatureExtractor(ContinuousValueEncoder("planet-power"), {s -> s.planet.planetPower(s.world).toDouble()}),
+            FeatureExtractor(ConstantValueEncoder("planet-size"), {s -> s.planet.getType()!!.getLimit().toDouble()})
+    )
+    val planetVectorizer = PlanetVectorizer(planetFeatoresExtractors)
+
     val objectMapper = ObjectMapper(SmileFactory())
     val bestFinder = BestTransitionsFinder(UserPowerEvaluator())
-    val elearner = AdaptiveLogisticRegression(200, 4, L1())
+    val elearner = AdaptiveLogisticRegression(200, planetFeatoresExtractors.size, L1())
     val mahoutLearner = MahoutLearner(elearner)
     val bestPlanetTransitions = LogsParser(objectMapper).parse("dump/").flatMap { game ->
         val bestMoves = bestFinder.findBestTransitions(game)
@@ -40,12 +55,12 @@ fun main(args : Array<String>) {
         }
     }
 
-    val categorizator = Categorizator({ 142 }, NeighborBasedPlanetVectorizer(), mahoutLearner)
+    val categorizator = Categorizator({ 142 }, planetVectorizer , mahoutLearner)
     val database =  categorizator.learn(bestPlanetTransitions.map { it.from })
 
     var predictor = InOutPlanetPredictor(
             {(v: Vector) -> elearner.getBest()!!.getPayload()!!.getLearner()!!.classifyFull(v)!! },
-            NeighborBasedPlanetVectorizer())
+            planetVectorizer)
 
     var logic = Logic { planets ->
         val predicts = planets!!.filter { it.getOwner() == username }.map { Pair(it, predictor.predict(it, World(planets))) }
