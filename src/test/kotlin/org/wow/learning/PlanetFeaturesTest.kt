@@ -1,4 +1,4 @@
-package org.wow.learning
+package org.wow.examples
 
 import org.junit.Test
 import com.epam.starwors.galaxy.Planet

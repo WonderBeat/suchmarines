@@ -1,4 +1,4 @@
-package otg.wow.logger
+package org.wow.examples
 
 import org.apache.mahout.classifier.sgd.AdaptiveLogisticRegression
 import org.apache.mahout.classifier.sgd.L1

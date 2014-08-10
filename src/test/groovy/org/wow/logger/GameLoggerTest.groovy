@@ -1,10 +1,8 @@
-package otg.wow.logger
+package org.wow.logger
 import com.epam.starwors.galaxy.Planet
 import com.epam.starwors.galaxy.PlanetType
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.smile.SmileFactory
-import org.wow.logger.GameLogger
-import org.wow.logger.SerializedWorld
 import spock.lang.Specification
 
 class GameLoggerTest extends Specification {

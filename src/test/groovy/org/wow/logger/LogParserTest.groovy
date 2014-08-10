@@ -1,4 +1,4 @@
-package otg.wow.logger
+package org.wow.logger
 
 import com.epam.starwors.galaxy.PlanetType
 import org.wow.logger.SerializedPlanet
