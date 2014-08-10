@@ -34,9 +34,8 @@ fun main(args : Array<String>) {
     val username = "WooDmaN"
     val objectMapper = ObjectMapper(SmileFactory())
     val planetFeatoresExtractors = listOf(
-            FeatureExtractor(ContinuousValueEncoder("enemies-around"), {state -> state.planet.enemiesAround(state
-                    .world).toDouble()}),
-            FeatureExtractor(ContinuousValueEncoder("friends-around"), {s -> s.planet.friendsAround(s.world).toDouble()}),
+            FeatureExtractor(ContinuousValueEncoder("enemies-around"), {state -> state.planet.enemiesAround().toDouble()}),
+            FeatureExtractor(ContinuousValueEncoder("friends-around"), {s -> s.planet.friendsAround().toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("planet-power"), {s -> s.planet.planetPower(s.world).toDouble()}),
             FeatureExtractor(ConstantValueEncoder("planet-size"), {s -> s.planet.getType()!!.getLimit().toDouble()})
     )

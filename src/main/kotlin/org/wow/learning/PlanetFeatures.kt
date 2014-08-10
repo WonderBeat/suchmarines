@@ -9,7 +9,7 @@ import com.epam.starwors.galaxy.Planet
 /**
  * Enemies around percentage
  */
-fun Planet.enemiesAround(world: World): Int {
+fun Planet.enemiesAround(): Int {
     val allUnits = this.getNeighbours()!!.sumUnits() + this.getUnits()
     val enemyUnits = this.getNeighbours()!!.filter { !it.getOwner().equals(this.getOwner()) }.sumUnits()
     return 100 * enemyUnits / allUnits
@@ -19,7 +19,7 @@ fun Collection<Planet>.sumUnits(): Int = this.fold(0) { acc, it -> acc + it.getU
 /**
  * Enemies around percentage
  */
-fun Planet.friendsAround(world: World): Int {
+fun Planet.friendsAround(): Int {
     val allUnits = this.getNeighbours()!!.sumUnits() + this.getUnits()
     val friendUnits = this.getNeighbours()!!.filter { it.getOwner().equals(this.getOwner()) }.sumUnits() + this.getUnits()
     return 100 * friendUnits / allUnits
@@ -42,4 +42,4 @@ private fun absolutePlanetPower(planet: Planet): Int
  * Isolation level %
  * enemy num / friends num
  */
-fun Planet.planet(world: World): Int = this.enemiesAround(world) / this.friendsAround(world)
+fun Planet.isolationLevel(): Int = this.enemiesAround() / this.friendsAround()
