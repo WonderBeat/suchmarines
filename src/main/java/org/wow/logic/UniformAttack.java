@@ -25,10 +25,11 @@ public class UniformAttack implements Logic {
                     if(neighbour.getOwner().equals("")){
                         moves.add(new Move(planet,neighbour,planet.getUnits()/4));
                     }
-                    if(planet.getUnits()== planet.getType().getLimit() && neighbour.getOwner().equals("WooDmaN") && neighbour.getUnits() < neighbour.getType().getLimit()/2 ){
+                    if(planet.getUnits()== planet.getType().getLimit() && neighbour.getOwner().equals(userName) && neighbour
+                            .getUnits() < neighbour.getType().getLimit()/2 ){
                         moves.add(new Move(planet,neighbour,planet.getUnits()/4));
                     }
-                    if(neighbour.getOwner().indexOf("bot")>-1){
+                    if(neighbour.getOwner().contains("bot")){
                         moves.add(new Move(planet,neighbour,planet.getUnits()/2));
                     }
                 }
