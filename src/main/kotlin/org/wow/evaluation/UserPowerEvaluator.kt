@@ -9,21 +9,26 @@ import org.wow.logger.World
  */
 public class UserPowerEvaluator : Evaluator {
 
-    private val unitsCoefficient = 0.3
-    private val planetsCoefficient = 0.3
+    private val unitsCoefficient = 0.1
+    private val planetsCoefficient = 0.6
     private val regenerationRateCoefficient = 0.3
 
     override fun evaluate(playerName: String, world: World): Double {
-        var units = 0
-        var planets = 0
-        var regenerationRate = 0
-        var playersPlanets = world.planets!!.filter { it.getOwner().equals(playerName) }
+        var units: Double = 0.0
+        var planets: Double = 0.0
+        var regenerationRate: Double = 0.0
+        var maxPossibleUnits = world.planets!!.fold(0, { (acc, planet) -> acc + planet.getType()!!.getLimit() })
+        var maxPossiblePlanets = world.planets.size()
+        var maxRegenRate = world.planets.fold(0, { (acc, planet) -> acc + planet.getType()!!.getIncrement() })
+        var playersPlanets = world.planets.filter { it.getOwner().equals(playerName) }
         playersPlanets.forEach {
             units += it.getUnits()
             planets++
-            regenerationRate += it.getType()!!.getIncrement()
+            regenerationRate += if(it.getUnits() < it.getType()!!.getIncrement()) it.getType()!!.getIncrement() else 0
         }
-        return unitsCoefficient * units + planetsCoefficient * planets + regenerationRateCoefficient * regenerationRate
+        val score = unitsCoefficient * units / maxPossibleUnits + planetsCoefficient * planets / maxPossiblePlanets +
+                regenerationRateCoefficient * regenerationRate / maxRegenRate
+        return score
     }
 
 }

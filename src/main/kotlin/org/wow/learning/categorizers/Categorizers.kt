@@ -5,6 +5,7 @@ import org.wow.learning.enemiesAround
 import org.wow.learning.friendsAround
 import org.wow.learning.enemiesNeighbours
 import org.wow.learning.unitsAfterRegeneration
+import org.wow.learning.friendsNeighbours
 
 trait Move
 
@@ -25,6 +26,12 @@ fun planetWasCaptured(transition: PlanetTransition): Move =
 
 fun planetMadeNoMove(transition: PlanetTransition): Move = when {
     transition.to.planet.getUnits() == transition.from.planet.unitsAfterRegeneration() -> InOutMove()
+    else -> UndefinedMove
+}
+
+fun planetSurroundedByNeutrals(transition: PlanetTransition): Move = when {
+    transition.from.planet.friendsNeighbours().size == 0 && transition.from.planet.enemiesNeighbours().size == 0
+                                            -> InOutMove(out = transition.unitsDifferencePercentage())
     else -> UndefinedMove
 }
 

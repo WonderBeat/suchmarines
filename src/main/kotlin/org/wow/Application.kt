@@ -30,6 +30,8 @@ import org.wow.logic.PredictionAwareBot
 import org.wow.learning.vectorizers.Vectorizer
 import org.wow.evaluation.transition.Transition
 import org.wow.learning.categorizers.inOutCategorizer
+import org.wow.learning.neutralNeighbours
+import org.wow.learning.isolationLevel
 
 
 /**
@@ -43,10 +45,12 @@ fun transitionToPlanetTransition(transition: Transition): List<PlanetTransition>
                     PlanetState(transition.resultWorld, transition.resultWorld.planets!!.first { it.getId() == sourcePlanet.getId()})) }
 
 fun main(args : Array<String>) {
-    val username = "WooDmaN"
+    val username = "suchbotwow"
+    val categoriesCount = 201 // 0 - 200 inclusive
     val objectMapper = ObjectMapper(SmileFactory())
     val planetFeatoresExtractors = listOf(
             FeatureExtractor(ContinuousValueEncoder("enemies-around"), {state -> state.planet.enemiesAround().toDouble()}),
+            FeatureExtractor(ContinuousValueEncoder("neutrals-around"), {state -> state.planet.neutralNeighbours().size.toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("friends-around"), {s -> s.planet.friendsAround().toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("planet-power"), {s -> s.planet.planetPower(s.world).toDouble()}),
             FeatureExtractor(ConstantValueEncoder("planet-size"), {s -> s.planet.getType()!!.getLimit().toDouble()})
@@ -61,7 +65,7 @@ fun main(args : Array<String>) {
             .flatMap { game -> bestFinder.findBestTransitions(game).flatMap(::transitionToPlanetTransition) }
 
     val learner = MachineLearner(::inOutCategorizer, firstStateInTransitionVectorizer,
-            AdaptiveLogisticRegression(200, planetFeatoresExtractors.size, L1()))
+            AdaptiveLogisticRegression(categoriesCount, planetFeatoresExtractors.size, L1()))
     val trainedMachine =  learner.learn(bestPlanetTransitions)
     trainedMachine.close()
     val trainedClassifier = trainedMachine.getBest()!!.getPayload()!!.getLearner()!!
@@ -73,8 +77,8 @@ fun main(args : Array<String>) {
     val gameLogger = GameLogger(objectMapper.writer()!!)
 
 
-    val game = SocketGame("176.192.95.4", 10040, "wpm5dqloq5s6kzxem4j5ixaw4tlu6dee",
-            gameLogger.and(PredictionAwareBot(username, predictor)))
+    val game = SocketGame("176.192.95.4", 10040, "bzk6w4awpfdhbdnnqv4ziaocvjkumbtn",
+            filterEmptyWorlds(gameLogger).and(PredictionAwareBot(username, predictor)))
     print("Running....")
     game.start()
 
@@ -83,6 +87,8 @@ fun main(args : Array<String>) {
     file.createNewFile();
     FileOutputStream(file).write(gameLogger.dump());
 }
+
+fun filterEmptyWorlds(delegate: Logic) = Logic { planets -> if(planets!!.empty) arrayListOf() else delegate.step(planets) }
 
 fun Logic.and(other: Logic): Logic =
         Logic { planets-> this.step(planets)?.plus(other.step(planets)!!)?.toArrayList() }

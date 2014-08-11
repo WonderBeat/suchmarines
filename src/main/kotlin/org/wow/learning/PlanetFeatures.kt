@@ -8,17 +8,7 @@ fun Planet.enemiesNeighbours(): List<Planet> = this.getNeighbours()!!.filter { i
 
 fun Planet.friendsNeighbours(): List<Planet> = this.getNeighbours()!!.filter { it.getOwner() == this.getOwner() }
 
-/**
-* Big enemies Planet around
-* */
-/**
- * Enemies around percentage
- */
-fun Planet.enemiesAround(): Int {
-    val allUnits = this.getNeighbours()!!.sumUnits() + this.getUnits()
-    val enemyUnits = this.enemiesNeighbours().sumUnits()
-    return 100 * enemyUnits / allUnits
-}
+fun Planet.neutralNeighbours(): List<Planet> = this.getNeighbours()!!.filter { it.getOwner()!!.isEmpty() }
 
 fun Collection<Planet>.sumUnits(): Int = this.fold(0) { acc, it -> acc + it.getUnits() }
 
@@ -28,8 +18,16 @@ fun Collection<Planet>.sumUnits(): Int = this.fold(0) { acc, it -> acc + it.getU
 fun Planet.friendsAround(): Int {
     val allUnits = this.getNeighbours()!!.sumUnits()
     val friendUnits = this.friendsNeighbours().sumUnits()
-    return 100 * friendUnits / allUnits
+    return when {
+        allUnits == 0 -> 100
+        else -> 100 * friendUnits / allUnits
+    }
 }
+
+/**
+ * Enemies around percentage
+ */
+fun Planet.enemiesAround(): Int = 100 - this.friendsAround()
 
 /**
  * Planet power
