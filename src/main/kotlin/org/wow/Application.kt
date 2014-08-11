@@ -31,7 +31,10 @@ import org.wow.learning.vectorizers.Vectorizer
 import org.wow.evaluation.transition.Transition
 import org.wow.learning.categorizers.inOutCategorizer
 import org.wow.learning.neutralNeighbours
-import org.wow.learning.isolationLevel
+import org.wow.logger.World
+import org.wow.learning.persist.FileClassifierProvider
+import org.apache.mahout.classifier.sgd.CrossFoldLearner
+import org.wow.learning.persist.LearnAndSave
 
 
 /**
@@ -61,14 +64,18 @@ fun main(args : Array<String>) {
     }
 
     val bestFinder = BestTransitionsFinder(UserPowerEvaluator())
-    val bestPlanetTransitions = LogsParser(objectMapper).parse("dump/")
-            .flatMap { game -> bestFinder.findBestTransitions(game).flatMap(::transitionToPlanetTransition) }
+    val bestMovesInGameFinder = { (game: List<World>) ->
+        bestFinder.findBestTransitions(game).flatMap(::transitionToPlanetTransition) }
 
     val learner = MachineLearner(::inOutCategorizer, firstStateInTransitionVectorizer,
             AdaptiveLogisticRegression(categoriesCount, planetFeatoresExtractors.size, L1()))
-    val trainedMachine =  learner.learn(bestPlanetTransitions)
-    trainedMachine.close()
-    val trainedClassifier = trainedMachine.getBest()!!.getPayload()!!.getLearner()!!
+    val extractClassifierFromRegression: (AdaptiveLogisticRegression) -> CrossFoldLearner = { it.close(); it.getBest()!!
+            .getPayload()!!.getLearner()!! }
+
+    LearnAndSave("games.db", LogsParser(objectMapper, "dump/"), bestMovesInGameFinder, learner).process()
+    val classifierProvider = FileClassifierProvider("games.db", { AdaptiveLogisticRegression(categoriesCount,
+                    planetFeatoresExtractors.size, L1()) }, extractClassifierFromRegression)
+    val trainedClassifier = classifierProvider.provide()
 
     var predictor = InOutPlanetPredictor(
             {(v: Vector) -> trainedClassifier.classifyFull(v)!! },

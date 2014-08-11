@@ -16,9 +16,13 @@ fun serializedWorldToWorld(serialized: SerializedWorld): World {
     })
 }
 
-public class LogsParser(val objectMapper: ObjectMapper) {
+public trait Parser {
+    fun parse(): Collection<List<World>>
+}
 
-    fun parse(sourceDirectoryName: String): Collection<List<World>> {
+public class LogsParser(val objectMapper: ObjectMapper, val sourceDirectoryName: String): Parser {
+
+    override fun parse(): Collection<List<World>> {
         val sourceDirectory = File(sourceDirectoryName)
         val files = sourceDirectory.listFiles { it.extension.equals("dmp") }
         return when {
