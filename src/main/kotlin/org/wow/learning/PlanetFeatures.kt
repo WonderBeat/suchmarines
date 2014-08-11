@@ -26,8 +26,8 @@ fun Collection<Planet>.sumUnits(): Int = this.fold(0) { acc, it -> acc + it.getU
  * Enemies around percentage
  */
 fun Planet.friendsAround(): Int {
-    val allUnits = this.getNeighbours()!!.sumUnits() + this.getUnits()
-    val friendUnits = this.friendsNeighbours().sumUnits() + this.getUnits()
+    val allUnits = this.getNeighbours()!!.sumUnits()
+    val friendUnits = this.friendsNeighbours().sumUnits()
     return 100 * friendUnits / allUnits
 }
 
@@ -49,3 +49,12 @@ private fun absolutePlanetPower(planet: Planet): Int
  * enemy num / friends num
  */
 fun Planet.isolationLevel(): Int = this.enemiesAround() / this.friendsAround()
+
+fun Planet.unitsAfterRegeneration(): Int {
+    val expected = (this.getUnits() + this.getType()!!.getIncrement().toDouble() / 100 *
+            this.getUnits()).toInt()
+    return when {
+        expected > this.getType()!!.getLimit() -> this.getType()!!.getLimit()
+        else -> expected
+    }
+}

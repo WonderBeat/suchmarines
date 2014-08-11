@@ -5,7 +5,6 @@ import org.apache.mahout.math.Vector
 import org.wow.learning.vectorizers.Vectorizer
 import org.wow.logger.World
 import org.wow.learning.vectorizers.planet.PlanetState
-import org.wow.learning.inOutMoveFromInt
 
 
 /**
@@ -22,7 +21,7 @@ public class InOutPlanetPredictor(val classifier: (Vector) -> Vector,
         val vector = planetVectorizer.vectorize(PlanetState(world, input))
         val classification = classifier(vector)
         val maxValue = classification.maxValueIndex()
-        val move = inOutMoveFromInt(maxValue)
+        val move = org.wow.learning.categorizers.inOutMoveFromInt(maxValue)
         return when {
             move.out > 0 -> PlanetMovePrediction(out = countUserNumber(move.out, input))
             else -> PlanetMovePrediction(`in` = countUserNumber(move.`in`, input))

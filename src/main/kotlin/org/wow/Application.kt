@@ -29,6 +29,7 @@ import org.apache.mahout.vectorizer.encoders.ConstantValueEncoder
 import org.wow.logic.PredictionAwareBot
 import org.wow.learning.vectorizers.Vectorizer
 import org.wow.evaluation.transition.Transition
+import org.wow.learning.categorizers.inOutCategorizer
 
 
 /**
@@ -59,7 +60,7 @@ fun main(args : Array<String>) {
     val bestPlanetTransitions = LogsParser(objectMapper).parse("dump/")
             .flatMap { game -> bestFinder.findBestTransitions(game).flatMap(::transitionToPlanetTransition) }
 
-    val learner = MachineLearner({ 142 }, firstStateInTransitionVectorizer,
+    val learner = MachineLearner(::inOutCategorizer, firstStateInTransitionVectorizer,
             AdaptiveLogisticRegression(200, planetFeatoresExtractors.size, L1()))
     val trainedMachine =  learner.learn(bestPlanetTransitions)
     trainedMachine.close()
