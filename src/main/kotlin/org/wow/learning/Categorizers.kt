@@ -29,8 +29,6 @@ fun inOutMoveFromInt(num: Int) = when {
 fun inOutPlanetCategorizer(state: PlanetTransition): InOutMove {
     val planetBeforeMove = state.from.planet
     val planetAfterMove = state.to.planet
-    assert(planetBeforeMove.getOwner() == planetAfterMove.getOwner(),
-            "can't categorize planet transition with owner change")
 
     val expectedUnits = (planetBeforeMove.getUnits() + planetBeforeMove.getType()!!.getIncrement().toDouble() / 100 *
             planetBeforeMove.getUnits()).toInt()
@@ -45,6 +43,7 @@ fun inOutPlanetCategorizer(state: PlanetTransition): InOutMove {
                                     sumPlanetsPower(planetBeforeMove.friendsNeighbours(), state.to.world)
 
     return when {
+        planetBeforeMove.getOwner() != planetAfterMove.getOwner() -> InOutMove(100, 0)
         planetAfterMove.getUnits() == expectedUnits -> InOutMove(0,0)
         planetBeforeMove.enemiesAround() == 0 -> when {
             planetAfterMove.getUnits() < expectedUnits ->
