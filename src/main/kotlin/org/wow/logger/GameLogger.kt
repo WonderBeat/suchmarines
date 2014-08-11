@@ -18,16 +18,17 @@ data class SerializedPlanet(val id: String = "",
 
 public class GameLogger(val serializer: ObjectWriter): Logic {
 
-    var states = listOf<SerializedWorld>()
+    var states: List<SerializedWorld> = arrayListOf()
 
     override fun step(world: Collection<Planet>?): MutableCollection<Move>? {
-        states = states.plus(SerializedWorld(world!!.map {
+        val serializedWorld = SerializedWorld(world!!.map {
             SerializedPlanet(it.getId()!!,
                     it.getOwner()!!,
                     it.getUnits(),
                     it.getType()!!,
                     it.getNeighbours()!!.map { it.getId()!! })
-        }))
+        })
+        states = states.plus(serializedWorld)
         return arrayListOf()
     }
 
