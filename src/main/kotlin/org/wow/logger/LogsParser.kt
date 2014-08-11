@@ -3,7 +3,6 @@ package org.wow.logger
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File
 import com.epam.starwors.galaxy.Planet
-import org.springframework.core.io.FileSystemResource
 
 fun serializedWorldToWorld(serialized: SerializedWorld): World {
     val withoutNeighborns = World(planets = serialized.planets.map { Planet(it.id, it.owner, it.units, it.`type`, listOf()) })
@@ -21,9 +20,12 @@ public class LogsParser(val objectMapper: ObjectMapper) {
 
     fun parse(sourceDirectoryName: String): Collection<List<World>> {
         val sourceDirectory = File(sourceDirectoryName)
-        val files: Array<File> = sourceDirectory.listFiles { it.extension.equals("dmp") }!!
-        return files.map {
-            objectMapper.readValue(it.readBytes(), javaClass<Array<SerializedWorld>>())!!.map { serializedWorldToWorld(it) }
+        val files = sourceDirectory.listFiles { it.extension.equals("dmp") }
+        return when {
+            files == null -> listOf()
+            else -> files.map {
+                objectMapper.readValue(it.readBytes(), javaClass<Array<SerializedWorld>>())!!.map { serializedWorldToWorld(it) }
+            }
         }
     }
 
