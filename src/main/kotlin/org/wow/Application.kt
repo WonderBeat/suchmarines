@@ -28,6 +28,18 @@ import org.wow.learning.planetPower
 import org.apache.mahout.vectorizer.encoders.ConstantValueEncoder
 import org.wow.logic.PredictionAwareBot
 import org.wow.learning.vectorizers.Vectorizer
+import org.wow.evaluation.transition.Transition
+
+
+/**
+ * Transition contains 2 world states and player name
+ * Planet transition contains 2 planet states in 2 worlds. Before and after move
+ */
+fun transitionToPlanetTransition(transition: Transition): List<PlanetTransition> =
+    transition.sourceWorld.planets!!
+            .filter { it.getOwner() == transition.playerName  }
+            .map { sourcePlanet -> PlanetTransition(PlanetState(transition.sourceWorld, sourcePlanet),
+                    PlanetState(transition.resultWorld, transition.resultWorld.planets!!.first { it.getId() == sourcePlanet.getId()})) }
 
 fun main(args : Array<String>) {
     val username = "WooDmaN"
@@ -44,15 +56,9 @@ fun main(args : Array<String>) {
     }
 
     val bestFinder = BestTransitionsFinder(UserPowerEvaluator())
-    val bestPlanetTransitions = LogsParser(objectMapper).parse("dump/").flatMap { game ->
-        bestFinder.findBestTransitions(game).flatMap { transition ->
-            transition.sourceWorld.planets!!.filter { it.getOwner() == transition.playerName  }.map {
-                sourcePlanet -> PlanetTransition(PlanetState(transition.sourceWorld, sourcePlanet),
-                        PlanetState(transition.resultWorld, transition.resultWorld.planets!!.first { it.getId() ==
-                                sourcePlanet.getId()}))
-            }
-        }
-    }
+    val bestPlanetTransitions = LogsParser(objectMapper).parse("dump/")
+            .flatMap { game -> bestFinder.findBestTransitions(game).flatMap(::transitionToPlanetTransition) }
+
     val learner = MachineLearner({ 142 }, firstStateInTransitionVectorizer,
             AdaptiveLogisticRegression(200, planetFeatoresExtractors.size, L1()))
     val trainedMachine =  learner.learn(bestPlanetTransitions)
