@@ -82,7 +82,6 @@ fun main(args : Array<String>) {
     file.getParentFile()!!.mkdirs();
     file.createNewFile();
     FileOutputStream(file).write(gameLogger.dump());
-    //FileSystemResource("dump/" + DateTime.now()!!.toString("MMddhhmmss") + ".dmp").getOutputStream()!!.write(gameLogger.dump())
 }
 
 fun Logic.and(other: Logic): Logic =
