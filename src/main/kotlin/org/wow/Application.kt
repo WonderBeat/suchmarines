@@ -44,7 +44,7 @@ fun main(args : Array<String>) {
             FeatureExtractor(ContinuousValueEncoder("enemies-around"), {state -> state.planet.enemiesAroundPercentage().toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("neutrals-around"), {state -> state.planet.neutralNeighbours().size.toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("friends-around"), {s -> s.planet.friendsAroundPercentage().toDouble()}),
-            FeatureExtractor(ContinuousValueEncoder("planet-power"), {s -> s.planet.planetPower(s.world).toDouble()}),
+            FeatureExtractor(ContinuousValueEncoder("planet-power"), {s -> s.planet.planetPower(s.world)}),
             FeatureExtractor(ConstantValueEncoder("planet-size"), {s -> s.planet.getType()!!.getLimit().toDouble()}),
             FeatureExtractor(ConstantValueEncoder("planet-connections"), {s -> s.planet.getNeighbours()!!.size.toDouble()})
     )
