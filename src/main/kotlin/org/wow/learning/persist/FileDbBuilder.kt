@@ -10,15 +10,15 @@ import org.slf4j.LoggerFactory
 import java.io.Closeable
 
 
-public class LearnAndSave<T, K: Writable>(fileName: String, val parser: Parser,
+public class FileDbBuilder<T, K: Writable>(fileName: String, val parser: Parser,
                           val transformer: (List<World>) -> List<T>,
                           val learner: Learner<T, K>) where K: Closeable {
 
-    private val logger = LoggerFactory.getLogger(javaClass<LearnAndSave<T, K>>())!!
+    private val logger = LoggerFactory.getLogger(javaClass<FileDbBuilder<T, K>>())!!
 
     private val fileResource = FileSystemResource(fileName)
 
-    fun process() {
+    fun create() {
         if(fileResource.exists()) {
             logger.info("Database already created. Step skipped")
         } else {

@@ -6,6 +6,8 @@ import org.wow.learning.friendsAround
 import org.wow.learning.enemiesNeighbours
 import org.wow.learning.unitsAfterRegeneration
 import org.wow.learning.friendsNeighbours
+import org.wow.learning.neutralNeighbours
+import org.wow.learning.planetPower
 
 trait Move
 
@@ -53,6 +55,18 @@ fun planetSurroundedByNoFriends(transition: PlanetTransition): Move = when {
  */
 fun noPlanetsWereCaptured(transition: PlanetTransition): Move = when {
     transition.from.planet.enemiesNeighbours().size == transition.to.planet.enemiesNeighbours().size -> estimateMoveWithUnitsDifference(transition)
+    else -> UndefinedMove
+}
+
+/**
+ * If all enemies are stronger and no neutrals around and units number increased more than regen ->
+ * it was a defend move!
+ */
+fun allEnemiesStronger(transition: PlanetTransition): Move = when {
+    transition.from.planet.neutralNeighbours().size > 0 -> UndefinedMove
+    transition.from.planet.unitsAfterRegeneration() < transition.to.planet.getUnits() &&
+            transition.from.planet.enemiesNeighbours().all { it.planetPower(transition.from.world) >
+            transition.from.planet.planetPower(transition.from.world) } -> InOutMove(`in` = transition.unitsDifferencePercentage())
     else -> UndefinedMove
 }
 

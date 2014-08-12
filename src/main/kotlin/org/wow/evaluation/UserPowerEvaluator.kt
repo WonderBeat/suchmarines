@@ -9,8 +9,8 @@ import org.wow.logger.World
  */
 public class UserPowerEvaluator : Evaluator {
 
-    private val unitsCoefficient = 0.1
-    private val planetsCoefficient = 0.6
+    private val unitsCoefficient = 0.2
+    private val planetsCoefficient = 0.4
     private val regenerationRateCoefficient = 0.3
 
     override fun evaluate(playerName: String, world: World): Double {

@@ -4,6 +4,8 @@ import org.wow.logger.World
 import org.wow.evaluation.Evaluator
 
 
+public data class Transition(val sourceWorld: World, val resultWorld: World, val playerName: String)
+
 public class BestTransitionsFinder(val evaluator: Evaluator) {
     fun findBestTransitions(game: List<World>): Collection<Transition> {
         val players = listPlayersOnMap(game)

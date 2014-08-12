@@ -22,6 +22,7 @@ fun inOutMoveFromInt(num: Int): InOutMove = when {
 }
 
 private val estimatorsList = listOf(::planetWasCaptured, ::planetMadeNoMove, ::planetSurroundedByNeutrals,
+        ::allEnemiesStronger,
         ::planetSurroundedByNoEnemies, ::planetSurroundedByNoFriends, ::planetWasCapturedByCurrentPlanet , ::noPlanetsWereCaptured)
 
 fun inOutCategorizer(transition: PlanetTransition): Int {
