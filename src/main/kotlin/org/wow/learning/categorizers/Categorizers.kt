@@ -8,6 +8,7 @@ import org.wow.learning.unitsAfterRegeneration
 import org.wow.learning.friendsNeighbours
 import org.wow.learning.neutralNeighbours
 import org.wow.learning.planetPower
+import org.wow.learning.isolationLevel
 
 trait Move
 
@@ -53,7 +54,12 @@ fun planetMadeNoMove(transition: PlanetTransition): Move = when {
 
 fun planetSurroundedByNeutrals(transition: PlanetTransition): Move = when {
     transition.from.planet.friendsNeighbours().size == 0 && transition.from.planet.enemiesNeighbours().size == 0
-                                            -> InOutMove(out = transition.unitsDifferencePercentage())
+                                            -> estimateMoveWithUnitsDifference(transition)
+    else -> UndefinedMove
+}
+
+fun frontLiner(transition: PlanetTransition): Move = when {
+    transition.from.planet.isolationLevel() > 1 -> InOutMove(`in` = transition.unitsDifferencePercentage())
     else -> UndefinedMove
 }
 
