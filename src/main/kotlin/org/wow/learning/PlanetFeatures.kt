@@ -2,7 +2,6 @@ package org.wow.learning
 
 import org.wow.logger.World
 import com.epam.starwors.galaxy.Planet
-import com.epam.starwors.galaxy.PlanetType
 
 fun Planet.enemiesNeighbours(): List<Planet> = this.getNeighbours()!!.filter { it.getOwner() != this.getOwner() && it
         .getOwner().isNotEmpty() }
@@ -15,20 +14,21 @@ fun Collection<Planet>.sumUnits(): Int = this.fold(0) { acc, it -> acc + it.getU
 
 /**
  * Enemies around percentage
+ * No friends around = 100% friends around. Wierd!
  */
-fun Planet.friendsAround(): Int {
+fun Planet.friendsAroundPercentage(): Int {
     val allUnits = this.getNeighbours()!!.sumUnits()
     val friendUnits = this.friendsNeighbours().sumUnits()
     return when {
         allUnits == 0 -> 100
-        else -> 100 * friendUnits / allUnits
+        else -> (100 * friendUnits) / allUnits
     }
 }
 
 /**
  * Enemies around percentage
  */
-fun Planet.enemiesAround(): Int = 100 - this.friendsAround()
+fun Planet.enemiesAroundPercentage(): Int = 100 - this.friendsAroundPercentage()
 
 /**
  * Planet power
@@ -47,7 +47,7 @@ private fun absolutePlanetPower(planet: Planet): Int
  * Isolation level %
  * enemy num / friends num
  */
-fun Planet.isolationLevel(): Int = this.enemiesAround() / this.friendsAround()
+fun Planet.isolationLevel(): Double = this.enemiesAroundPercentage().toDouble() / this.friendsAroundPercentage()
 
 fun Planet.unitsAfterRegeneration(): Int {
     val expected = (this.getUnits() + this.getType()!!.getIncrement() * 0.01 *

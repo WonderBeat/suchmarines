@@ -1,8 +1,8 @@
 package org.wow.learning.categorizers
 
 import org.wow.learning.vectorizers.planet.PlanetTransition
-import org.wow.learning.enemiesAround
-import org.wow.learning.friendsAround
+import org.wow.learning.enemiesAroundPercentage
+import org.wow.learning.friendsAroundPercentage
 import org.wow.learning.enemiesNeighbours
 import org.wow.learning.unitsAfterRegeneration
 import org.wow.learning.friendsNeighbours
@@ -58,7 +58,7 @@ fun planetSurroundedByNeutrals(transition: PlanetTransition): Move = when {
 }
 
 fun planetSurroundedByNoEnemies(transition: PlanetTransition): Move = when {
-    transition.from.planet.enemiesAround() == 0 -> estimateMoveWithUnitsDifference(transition)
+    transition.from.planet.enemiesAroundPercentage() == 0 -> estimateMoveWithUnitsDifference(transition)
     else -> UndefinedMove
 }
 
@@ -66,7 +66,7 @@ fun planetSurroundedByNoEnemies(transition: PlanetTransition): Move = when {
  * Attack only
  */
 fun planetSurroundedByNoFriends(transition: PlanetTransition): Move = when {
-    transition.from.planet.friendsAround() == 0 -> InOutMove(0, transition.unitsDifferencePercentage())
+    transition.from.planet.friendsAroundPercentage() == 0 -> InOutMove(0, transition.unitsDifferencePercentage())
     else -> UndefinedMove
 }
 

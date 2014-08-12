@@ -21,8 +21,8 @@ import org.apache.mahout.math.Vector
 import java.io.File
 import org.apache.mahout.vectorizer.encoders.ContinuousValueEncoder
 import org.wow.learning.vectorizers.planet.FeatureExtractor
-import org.wow.learning.enemiesAround
-import org.wow.learning.friendsAround
+import org.wow.learning.enemiesAroundPercentage
+import org.wow.learning.friendsAroundPercentage
 import org.wow.learning.planetPower
 import org.apache.mahout.vectorizer.encoders.ConstantValueEncoder
 import org.wow.logic.PredictionAwareBot
@@ -41,9 +41,9 @@ fun main(args : Array<String>) {
     val categoriesCount = 201 // 0 - 200 inclusive
     val objectMapper = ObjectMapper(SmileFactory())
     val planetFeatoresExtractors = listOf(
-            FeatureExtractor(ContinuousValueEncoder("enemies-around"), {state -> state.planet.enemiesAround().toDouble()}),
+            FeatureExtractor(ContinuousValueEncoder("enemies-around"), {state -> state.planet.enemiesAroundPercentage().toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("neutrals-around"), {state -> state.planet.neutralNeighbours().size.toDouble()}),
-            FeatureExtractor(ContinuousValueEncoder("friends-around"), {s -> s.planet.friendsAround().toDouble()}),
+            FeatureExtractor(ContinuousValueEncoder("friends-around"), {s -> s.planet.friendsAroundPercentage().toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("planet-power"), {s -> s.planet.planetPower(s.world).toDouble()}),
             FeatureExtractor(ConstantValueEncoder("planet-size"), {s -> s.planet.getType()!!.getLimit().toDouble()}),
             FeatureExtractor(ConstantValueEncoder("planet-connections"), {s -> s.planet.getNeighbours()!!.size.toDouble()})
