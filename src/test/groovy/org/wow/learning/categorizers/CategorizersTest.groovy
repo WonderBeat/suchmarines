@@ -109,4 +109,27 @@ class CategorizersTest extends Specification {
         assert move.in == 0 && move.out > 0
     }
 
+    def 'InOut move convertors test'() {
+        given:
+        def move = new InOutMove(moveIn, moveOut)
+
+        when:
+        def mahoutClass = org.wow.learning.categorizers.CategorizersPackage.toInt(move)
+        def moveRestored = org.wow.learning.categorizers.CategorizersPackage.inOutMoveFromInt(mahoutClass)
+
+        then:
+        assert mahoutClass == goal
+        assert moveRestored.in == move.in || moveRestored.in == 100 && move.in > 100
+        assert moveRestored.out == moveRestored.out || moveRestored.out == 100 && move.out > 100
+
+        where:
+        moveIn | moveOut | goal
+        10  | 0 | 90
+        100 | 0 | 0
+        0   | 10 | 110
+        0   | 90 | 190
+        110 | 0 | 0
+        0   | 150 | 200
+    }
+
 }
