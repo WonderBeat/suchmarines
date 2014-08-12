@@ -19,7 +19,6 @@ import org.wow.learning.predict.InOutPlanetPredictor
 import org.apache.mahout.math.Vector
 
 import java.io.File
-import org.apache.mahout.vectorizer.encoders.ContinuousValueEncoder
 import org.wow.learning.vectorizers.planet.FeatureExtractor
 import org.wow.learning.enemiesAroundPercentage
 import org.wow.learning.friendsAroundPercentage
@@ -34,21 +33,22 @@ import org.wow.learning.persist.FileClassifierProvider
 import org.apache.mahout.classifier.sgd.CrossFoldLearner
 import org.wow.learning.persist.FileDbBuilder
 import org.wow.learning.vectorizers.planet.transitionToPlanetTransition
+import org.apache.mahout.vectorizer.encoders.ContinuousValueEncoder
 
 
 fun main(args : Array<String>) {
     val username = "suchbotwow"
     val categoriesCount = 201 // 0 - 200 inclusive
     val objectMapper = ObjectMapper(SmileFactory())
-    val planetFeatoresExtractors = listOf(
+    val planetFeaturesExtractors = listOf(
             FeatureExtractor(ContinuousValueEncoder("enemies-around"), {state -> state.planet.enemiesAroundPercentage().toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("neutrals-around"), {state -> state.planet.neutralNeighbours().size.toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("friends-around"), {s -> s.planet.friendsAroundPercentage().toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("planet-power"), {s -> s.planet.planetPower(s.world)}),
-            FeatureExtractor(ConstantValueEncoder("planet-size"), {s -> s.planet.getType()!!.getLimit().toDouble()}),
-            FeatureExtractor(ConstantValueEncoder("planet-connections"), {s -> s.planet.getNeighbours()!!.size.toDouble()})
+            FeatureExtractor(ContinuousValueEncoder("planet-size"), {s -> s.planet.getType()!!.ordinal().toDouble()}),
+            FeatureExtractor(ContinuousValueEncoder("planet-connections"), {s -> s.planet.getNeighbours()!!.size.toDouble()})
     )
-    val planetVectorizer = PlanetVectorizer(planetFeatoresExtractors)
+    val planetVectorizer = PlanetVectorizer(planetFeaturesExtractors)
     val firstStateInTransitionVectorizer = object: Vectorizer<PlanetTransition, Vector> {
         override fun vectorize(input: PlanetTransition) = planetVectorizer.vectorize(input.from)
     }
@@ -58,13 +58,13 @@ fun main(args : Array<String>) {
         bestFinder.findBestTransitions(game).flatMap(::transitionToPlanetTransition) }
 
     val learner = MachineLearner(::inOutCategorizer, firstStateInTransitionVectorizer,
-            AdaptiveLogisticRegression(categoriesCount, planetFeatoresExtractors.size, L1()))
+            AdaptiveLogisticRegression(categoriesCount, planetFeaturesExtractors.size, L1()))
     val extractClassifierFromRegression: (AdaptiveLogisticRegression) -> CrossFoldLearner = { it.close(); it.getBest()!!
             .getPayload()!!.getLearner()!! }
 
     FileDbBuilder("games.db", LogsParser(objectMapper, "dump/"), bestMovesInGameFinder, learner).create()
     val classifierProvider = FileClassifierProvider("games.db", { AdaptiveLogisticRegression(categoriesCount,
-                    planetFeatoresExtractors.size, L1()) }, extractClassifierFromRegression)
+                    planetFeaturesExtractors.size, L1()) }, extractClassifierFromRegression)
     val trainedClassifier = classifierProvider.provide()
 
     var predictor = InOutPlanetPredictor(
