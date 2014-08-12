@@ -5,30 +5,18 @@ import org.apache.mahout.math.Vector
 import org.wow.learning.vectorizers.Vectorizer
 import org.wow.logger.World
 import org.wow.learning.vectorizers.planet.PlanetState
-
-
-/**
- * Percent of your users, that should be moved in or out planet
- */
-data class PlanetMovePrediction(val out: Int = 0, val `in`: Int = 0)
+import org.wow.learning.categorizers.InOutMove
 
 public class InOutPlanetPredictor(val classifier: (Vector) -> Vector,
                                   val planetVectorizer: Vectorizer<PlanetState, Vector>
-                                  ): Predictor<PlanetMovePrediction, Planet> {
+                                  ): Predictor<InOutMove, Planet> {
 
 
-    override fun predict(input: Planet, world: World): PlanetMovePrediction {
+    override fun predict(input: Planet, world: World): InOutMove {
         val vector = planetVectorizer.vectorize(PlanetState(world, input))
         val classification = classifier(vector)
         val maxValue = classification.maxValueIndex()
-        val move = org.wow.learning.categorizers.inOutMoveFromInt(maxValue)
-        return when {
-            move.out > 0 -> PlanetMovePrediction(out = countUserNumber(move.out, input))
-            else -> PlanetMovePrediction(`in` = countUserNumber(move.`in`, input))
-        }
+        return org.wow.learning.categorizers.inOutMoveFromInt(maxValue)
     }
-
-    fun countUserNumber(percent: Int, planet: Planet): Int =
-        (planet.getUnits().toDouble() * (percent.toDouble() / 100).toDouble()).toInt()
 
 }

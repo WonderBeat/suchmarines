@@ -4,20 +4,19 @@ import com.epam.starwors.bot.Logic
 import com.epam.starwors.galaxy.Planet
 import com.epam.starwors.galaxy.Move
 import org.wow.learning.predict.Predictor
-import org.wow.learning.predict.PlanetMovePrediction
 import org.wow.logger.World
 import org.wow.learning.planetPower
 import org.slf4j.LoggerFactory
 import org.wow.learning.enemiesNeighbours
 import org.wow.learning.neutralNeighbours
 import org.wow.learning.friendsNeighbours
+import org.wow.learning.percentUsers
+import org.wow.learning.categorizers.InOutMove
 
-data class PlanetMovePredict(val planet: Planet, val predict: PlanetMovePrediction)
-
-private fun Planet.unitsFromPercent(percent: Int): Int = ((this.getUnits() * percent).toDouble() / 100.toDouble()).toInt()
+data class PlanetMovePredict(val planet: Planet, val predict: InOutMove)
 
 public class PredictionAwareBot(val username: String,
-        val inOutPredictor: Predictor<PlanetMovePrediction, Planet>): Logic {
+        val inOutPredictor: Predictor<InOutMove, Planet>): Logic {
 
     private val logger = LoggerFactory.getLogger(javaClass<PredictionAwareBot>())!!
 
@@ -29,14 +28,14 @@ public class PredictionAwareBot(val username: String,
         val readyForUnitsTransfer = predictsForPlanets.filter { it.predict.out > 0 }
 
         val moves = readyForUnitsTransfer.flatMap { readyToSendPlanet ->
-            val couldSend = readyToSendPlanet.planet.unitsFromPercent(readyToSendPlanet.predict.out)
+            val couldSend = readyToSendPlanet.planet.percentUsers(readyToSendPlanet.predict.out)
             val leastPowerEnemy = readyToSendPlanet.planet.enemiesNeighbours().minBy { it.planetPower(World(planets)) }
             val leastPowerFriend = readyToSendPlanet.planet.friendsNeighbours().minBy { it.planetPower(World(planets)) }
             val neutralPlanetNeighbor = readyToSendPlanet.planet.neutralNeighbours().first
             val requiresDefendNeighbours = requiresDefend.filter { readyToSendPlanet.planet.getNeighbours()!!.contains(it) }
 
             fun createDefendMove(unitsLeft: Int, planetToDefend: PlanetMovePredict): Move? {
-                val requires = planetToDefend.planet.unitsFromPercent(planetToDefend.predict.`in`)
+                val requires = planetToDefend.planet.percentUsers(planetToDefend.predict.`in`)
                 return when {
                     unitsLeft == 0 -> null
                     else -> Move(readyToSendPlanet.planet, planetToDefend.planet, Integer.min(unitsLeft, requires))
@@ -52,6 +51,11 @@ public class PredictionAwareBot(val username: String,
                 }
             })
             val leftForAttackUnits = couldSend - countUnits(defendMoves)
+            val maxPossible = readyToSendPlanet.planet.getUnits()
+            if(maxPossible < leftForAttackUnits) {
+                var a = 5
+                ++a
+            }
             when {
                 leftForAttackUnits > 0 -> when {
                     leastPowerEnemy != null -> defendMoves.plus(Move(readyToSendPlanet.planet, leastPowerEnemy,

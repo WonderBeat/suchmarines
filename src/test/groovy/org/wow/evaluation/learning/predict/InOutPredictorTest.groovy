@@ -3,8 +3,8 @@ package org.wow.evaluation.learning.predict
 import com.epam.starwors.galaxy.Planet
 import kotlin.Function1
 import org.apache.mahout.math.RandomAccessSparseVector
+import org.wow.learning.categorizers.InOutMove
 import org.wow.learning.predict.InOutPlanetPredictor
-import org.wow.learning.predict.PlanetMovePrediction
 import org.wow.learning.vectorizers.Vectorizer
 import org.wow.logger.World
 import spock.lang.Specification
@@ -26,11 +26,11 @@ class InOutPredictorTest extends Specification {
 
         where:
         classificationResult | expectation
-        100                  | new PlanetMovePrediction()
-        100                  | new PlanetMovePrediction()
-        120                  | new PlanetMovePrediction(200, 0)
-        30                   | new PlanetMovePrediction(0, 700)
-        55                   | new PlanetMovePrediction(0, 450)
+        100                  | new InOutMove()
+        100                  | new InOutMove()
+        120                  | new InOutMove(0, 20)
+        30                   | new InOutMove(70, 0)
+        55                   | new InOutMove(45, 0)
 
     }
 }

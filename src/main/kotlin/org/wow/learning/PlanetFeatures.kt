@@ -2,6 +2,7 @@ package org.wow.learning
 
 import org.wow.logger.World
 import com.epam.starwors.galaxy.Planet
+import com.epam.starwors.galaxy.PlanetType
 
 fun Planet.enemiesNeighbours(): List<Planet> = this.getNeighbours()!!.filter { it.getOwner() != this.getOwner() && it
         .getOwner().isNotEmpty() }
@@ -49,10 +50,12 @@ private fun absolutePlanetPower(planet: Planet): Int
 fun Planet.isolationLevel(): Int = this.enemiesAround() / this.friendsAround()
 
 fun Planet.unitsAfterRegeneration(): Int {
-    val expected = (this.getUnits() + this.getType()!!.getIncrement().toDouble() / 100 *
+    val expected = (this.getUnits() + this.getType()!!.getIncrement() * 0.01 *
             this.getUnits()).toInt()
     return when {
         expected > this.getType()!!.getLimit() -> this.getType()!!.getLimit()
         else -> expected
     }
 }
+
+fun Planet.percentUsers(percent: Int): Int = ((this.getUnits() * percent).toDouble() / 100.0).toInt()
