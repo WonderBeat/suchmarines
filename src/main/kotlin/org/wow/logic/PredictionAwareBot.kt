@@ -31,7 +31,7 @@ public class PredictionAwareBot(val username: String,
             val couldSend = readyToSendPlanet.planet.percentUsers(readyToSendPlanet.predict.out)
             val leastPowerEnemy = readyToSendPlanet.planet.enemiesNeighbours().minBy { it.planetPower(World(planets)) }
             val leastPowerFriend = readyToSendPlanet.planet.friendsNeighbours().minBy { it.planetPower(World(planets)) }
-            val neutralPlanetNeighbor = readyToSendPlanet.planet.neutralNeighbours().first
+            val neutralBiggest = readyToSendPlanet.planet.neutralNeighbours().sortBy { it.getType()!!.getLimit() }.first
             val requiresDefendNeighbours = requiresDefend.filter { readyToSendPlanet.planet.getNeighbours()!!.contains(it) }
 
             fun createDefendMove(unitsLeft: Int, planetToDefend: PlanetMovePredict): Move? {
@@ -51,16 +51,13 @@ public class PredictionAwareBot(val username: String,
                 }
             })
             val leftForAttackUnits = couldSend - countUnits(defendMoves)
-            val maxPossible = readyToSendPlanet.planet.getUnits()
-            if(maxPossible < leftForAttackUnits) {
-                var a = 5
-                ++a
-            }
             when {
                 leftForAttackUnits > 0 -> when {
-                    leastPowerEnemy != null -> defendMoves.plus(Move(readyToSendPlanet.planet, leastPowerEnemy,
+                    leastPowerEnemy != null && leftForAttackUnits > leastPowerEnemy.getUnits() -> defendMoves.plus(Move(readyToSendPlanet.planet, leastPowerEnemy,
                             leftForAttackUnits))
-                    neutralPlanetNeighbor != null -> defendMoves.plus(Move(readyToSendPlanet.planet, neutralPlanetNeighbor,
+                    neutralBiggest != null -> defendMoves.plus(Move(readyToSendPlanet.planet, neutralBiggest,
+                            leftForAttackUnits))
+                    leastPowerEnemy != null -> defendMoves.plus(Move(readyToSendPlanet.planet, leastPowerEnemy,
                             leftForAttackUnits))
                     leastPowerFriend != null -> defendMoves.plus(Move(readyToSendPlanet.planet, leastPowerFriend,
                             leftForAttackUnits))
