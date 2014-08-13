@@ -15,24 +15,33 @@ fun Collection<Planet>.sumUnits(): Int = this.fold(0) { acc, it -> acc + it.getU
 /**
  * Enemies around percentage
  */
-fun Planet.friendsAroundPercentage(): Int {
+fun Planet.friendsAroundPercentage(): Double {
     val allUnits = this.getNeighbours()!!.sumUnits()
     val friendUnits = this.friendsNeighbours().sumUnits()
     return when {
-        allUnits == 0 -> 0
-        else -> (100 * friendUnits) / allUnits
+        allUnits == 0 -> 0.0
+        else -> (100.0 * friendUnits) / allUnits
+    }
+}
+
+fun Planet.neutralAroundPercentage(): Double {
+    val allUnits = this.getNeighbours()!!.sumUnits()
+    val neutral = this.neutralNeighbours().sumUnits()
+    return when {
+        allUnits == 0 -> 0.0
+        else -> (100.0 * neutral) / allUnits
     }
 }
 
 /**
  * Enemies around percentage
  */
-fun Planet.enemiesAroundPercentage(): Int {
+fun Planet.enemiesAroundPercentage(): Double {
     val allUnits = this.getNeighbours()!!.sumUnits()
     val enemyUnits = this.enemiesNeighbours().sumUnits()
     return when {
-        allUnits == 0 -> 0
-        else -> (100 * enemyUnits) / allUnits
+        allUnits == 0 -> 0.0
+        else -> (100.0 * enemyUnits) / allUnits
     }
 }
 

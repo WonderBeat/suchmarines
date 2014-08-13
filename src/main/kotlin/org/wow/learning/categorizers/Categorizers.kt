@@ -9,6 +9,7 @@ import org.wow.learning.friendsNeighbours
 import org.wow.learning.neutralNeighbours
 import org.wow.learning.planetPower
 import org.wow.learning.isolationLevel
+import com.epam.starwors.galaxy.Planet
 
 trait Move
 
@@ -39,7 +40,7 @@ fun inOutMoveFromInt(num: Int): InOutMove = when {
 fun PlanetTransition.unitsDifferencePercentage(): Int =
         (Math.abs(this.to.planet.getUnits() - this.from.planet.unitsAfterRegeneration()).toDouble() * 100 / this.from.planet.getUnits().toDouble()).toInt()
 
-fun estimateMoveWithUnitsDifference(transition: PlanetTransition): Move =  when {
+fun isolatedPlanet(transition: PlanetTransition): Move =  when {
     transition.to.planet.getUnits() < transition.from.planet.unitsAfterRegeneration() -> InOutMove(out = transition.unitsDifferencePercentage())
     else -> InOutMove(`in` = transition.unitsDifferencePercentage())
 }
@@ -54,18 +55,18 @@ fun planetMadeNoMove(transition: PlanetTransition): Move = when {
 
 fun planetSurroundedByNeutrals(transition: PlanetTransition): Move = when {
     transition.from.planet.friendsNeighbours().size == 0 && transition.from.planet.enemiesNeighbours().size == 0
-                                            -> estimateMoveWithUnitsDifference(transition)
+                                            -> isolatedPlanet(transition)
     else -> UndefinedMove
 }
 
 fun frontLiner(transition: PlanetTransition): Move = when {
     transition.from.planet.neutralNeighbours().size > 0 -> UndefinedMove
-    transition.from.planet.isolationLevel() > 1 -> InOutMove(`in` = transition.unitsDifferencePercentage())
+    transition.from.planet.isolationLevel() > 1.0 -> InOutMove(`in` = transition.unitsDifferencePercentage())
     else -> UndefinedMove
 }
 
 fun planetSurroundedByNoEnemies(transition: PlanetTransition): Move = when {
-    transition.from.planet.enemiesAroundPercentage() == 0 -> estimateMoveWithUnitsDifference(transition)
+    transition.from.planet.enemiesAroundPercentage().toInt() == 0 -> isolatedPlanet(transition)
     else -> UndefinedMove
 }
 
@@ -73,7 +74,7 @@ fun planetSurroundedByNoEnemies(transition: PlanetTransition): Move = when {
  * Attack only
  */
 fun planetSurroundedByNoFriends(transition: PlanetTransition): Move = when {
-    transition.from.planet.friendsAroundPercentage() == 0 -> InOutMove(0, transition.unitsDifferencePercentage())
+    transition.from.planet.friendsAroundPercentage().toInt() == 0 -> InOutMove(0, transition.unitsDifferencePercentage())
     else -> UndefinedMove
 }
 
@@ -81,7 +82,7 @@ fun planetSurroundedByNoFriends(transition: PlanetTransition): Move = when {
  * Worst estimator ever. But we need to categorize this situation
  */
 fun noPlanetsWereCaptured(transition: PlanetTransition): Move = when {
-    transition.from.planet.enemiesNeighbours().size == transition.to.planet.enemiesNeighbours().size -> estimateMoveWithUnitsDifference(transition)
+    transition.from.planet.enemiesNeighbours().size == transition.to.planet.enemiesNeighbours().size -> isolatedPlanet(transition)
     else -> UndefinedMove
 }
 
@@ -98,10 +99,12 @@ fun allEnemiesStronger(transition: PlanetTransition): Move = when {
 }
 
 fun planetWasCapturedByCurrentPlanet(transition: PlanetTransition): Move {
-    val enemiesAfterMove = transition.to.planet.enemiesNeighbours().map { it.getId() }.toSet()
-    val capturedEnemies = transition.from.planet.enemiesNeighbours().filter { !enemiesAfterMove.contains(it.getId()) }
+    fun enemyAndNeighbors(planet: Planet): List<Planet> = planet.enemiesNeighbours().plus(planet.neutralNeighbours())
+    val othersAfter = enemyAndNeighbors(transition.to.planet).map { it.getId() }.toSet()
+    val captured = enemyAndNeighbors(transition.to.planet).filter { !othersAfter.contains(it.getId()) }
     return when {
-        capturedEnemies.size == 1 && capturedEnemies.first!!.enemiesNeighbours().size == 1 -> InOutMove(out = transition.unitsDifferencePercentage())
+        captured.size > 0 && captured.any { p -> p.getOwner() == transition.from.planet.getOwner() } ->
+            InOutMove(out = transition.unitsDifferencePercentage())
         else -> UndefinedMove
     }
 }

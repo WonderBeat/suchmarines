@@ -21,12 +21,10 @@ import org.wow.learning.enemiesAroundPercentage
 import org.wow.learning.friendsAroundPercentage
 import org.wow.logic.PredictionAwareBot
 import org.wow.learning.vectorizers.Vectorizer
-import org.wow.learning.neutralNeighbours
 import org.wow.logger.World
 import org.wow.learning.persist.FileClassifierProvider
 import org.apache.mahout.classifier.sgd.CrossFoldLearner
 import org.wow.learning.vectorizers.planet.transitionToPlanetTransition
-import org.apache.mahout.vectorizer.encoders.ContinuousValueEncoder
 import reactor.core.Environment
 import org.wow.logger.LogsParser
 import org.wow.learning.FileBasedLearner
@@ -37,6 +35,8 @@ import org.springframework.core.io.FileSystemResource
 import java.io.DataOutputStream
 import org.wow.learning.volumePercentage
 import reactor.event.dispatch.ThreadPoolExecutorDispatcher
+import com.fasterxml.jackson.dataformat.smile.SmileFactory
+import org.wow.learning.neutralAroundPercentage
 
 fun allFilesInFolder(folder: String):List<File> {
     val list = File(folder).listFiles { it.extension.equals("dmp") }?.toArrayList()
@@ -52,18 +52,18 @@ private val dumpFolder = "dump/"
 
 fun main(args : Array<String>) {
     val categoriesCount = 201 // 0 - 200 inclusive
-    val objectMapper = ObjectMapper()
+    val objectMapper = ObjectMapper(SmileFactory())
     val env = Environment()
     env.addDispatcher(Environment.THREAD_POOL, ThreadPoolExecutorDispatcher(3, 3))
 
 
     val planetFeaturesExtractors = listOf(
-            FeatureExtractor(ContinuousValueEncoder("planet-volume"), {s -> s.planet.volumePercentage()}),
-            FeatureExtractor(ContinuousValueEncoder("enemies-around"), {state -> state.planet.enemiesAroundPercentage().toDouble()}),
-            FeatureExtractor(ContinuousValueEncoder("friends-around"), {s -> s.planet.friendsAroundPercentage().toDouble()}),
-            FeatureExtractor(ContinuousValueEncoder("neutrals-around"), {state -> state.planet.neutralNeighbours().size.toDouble()}),
-            FeatureExtractor(ContinuousValueEncoder("planet-size"), {s -> s.planet.getType()!!.ordinal().toDouble()}),
-            FeatureExtractor(ContinuousValueEncoder("planet-connections"), {s -> s.planet.getNeighbours()!!.size.toDouble()})
+            FeatureExtractor({s -> s.planet.volumePercentage()}, 1.0),
+            FeatureExtractor({s -> s.planet.enemiesAroundPercentage()}, 1.0),
+            FeatureExtractor({s -> s.planet.friendsAroundPercentage()}, 1.0),
+            FeatureExtractor({s -> s.planet.neutralAroundPercentage()}, 1.0),
+            FeatureExtractor({s -> s.planet.getType()!!.ordinal().toDouble()}, 20.0),
+            FeatureExtractor({s -> s.planet.getNeighbours()!!.size.toDouble()}, 20.0)
     )
     val regressionBuilder = { AdaptiveLogisticRegression(categoriesCount, planetFeaturesExtractors.size, L1()) }
     val extractClassifierFromRegression: (AdaptiveLogisticRegression) -> CrossFoldLearner = { it.close(); it.getBest()!!

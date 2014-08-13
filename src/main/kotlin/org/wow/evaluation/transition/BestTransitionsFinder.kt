@@ -14,8 +14,10 @@ public class BestTransitionsFinder(val evaluator: Evaluator) {
                 Transition(pair.first, pair.second, player!!)
             }
         }
-        return transitions.map {
-            it.maxBy { evaluator.difference(it.playerName, it.sourceWorld, it.resultWorld) }!! }
+        val best = transitions.map {
+            it.maxBy { evaluator.difference(it.playerName, it.sourceWorld, it.resultWorld) }!!
+        }
+        return best
     }
 
     fun listPlayersOnMap(game: List<World>): Set<String?> {

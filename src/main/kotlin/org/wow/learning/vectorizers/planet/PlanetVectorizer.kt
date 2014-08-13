@@ -2,18 +2,18 @@ package org.wow.learning.vectorizers.planet
 
 import org.wow.learning.vectorizers.Vectorizer
 import org.apache.mahout.math.Vector
-import org.apache.mahout.math.RandomAccessSparseVector
 import com.epam.starwors.galaxy.Planet
 import org.wow.logger.World
-import org.apache.mahout.vectorizer.encoders.FeatureVectorEncoder
 import org.wow.evaluation.transition.Transition
+import org.apache.mahout.math.DenseVector
+import org.apache.mahout.math.WeightedVector
 
 
 public data class PlanetState(val world: World, val planet: Planet)
 
 public data class PlanetTransition(val from: PlanetState, val to: PlanetState)
 
-public data class FeatureExtractor(val encoder: FeatureVectorEncoder, val weightEvaluator: (PlanetState) -> Double)
+public data class FeatureExtractor(val eval: (PlanetState) -> Double, val weight: Double)
 
 /**
  * Transition contains 2 world states and player name
@@ -29,8 +29,8 @@ public class PlanetVectorizer(private val featuresExtractors: List<FeatureExtrac
         Vector> {
 
     override fun vectorize(input: PlanetState): Vector {
-        val vector = RandomAccessSparseVector(featuresExtractors.size)
-        featuresExtractors.forEach { it.encoder.addToVector(null: ByteArray?, it.weightEvaluator(input), vector) }
-        return vector
+        return featuresExtractors.withIndices()
+                .fold<Pair<Int, FeatureExtractor>, Vector>(DenseVector(featuresExtractors.size),
+                        { (acc, extractor) -> acc.set(extractor.first, extractor.second.eval(input)); WeightedVector(acc, extractor.second.weight, extractor.first)  })
     }
 }
