@@ -59,6 +59,7 @@ fun planetSurroundedByNeutrals(transition: PlanetTransition): Move = when {
 }
 
 fun frontLiner(transition: PlanetTransition): Move = when {
+    transition.from.planet.neutralNeighbours().size > 0 -> UndefinedMove
     transition.from.planet.isolationLevel() > 1 -> InOutMove(`in` = transition.unitsDifferencePercentage())
     else -> UndefinedMove
 }
