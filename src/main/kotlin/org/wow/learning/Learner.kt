@@ -6,5 +6,5 @@ import java.io.DataOutput
 
 public trait Learner <T, K> {
 
-    fun learn(data: List<T>): K
+    fun learn(data: T): K
 }
