@@ -3,15 +3,14 @@ package org.wow.logger
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.epam.starwors.galaxy.Planet
 import java.io.File
-import com.fasterxml.jackson.dataformat.smile.SmileFactory
 
 fun serializedWorldToWorld(serialized: SerializedWorld): World {
-    val withoutNeighborns = World(planets = serialized.planets.map { Planet(it.id, it.owner, it.units, it.`type`, listOf()) })
-    val planetPairs = serialized.planets.map { planet -> Pair(planet, withoutNeighborns.planets!!.firstOrNull { it.getId() == planet.id }) }
+    val withoutNeighbors = World(planets = serialized.planets.map { Planet(it.id, it.owner, it.units, it.`type`, arrayListOf()) })
+    val planetPairs = serialized.planets.map { planet -> Pair(planet, withoutNeighbors.planets!!.firstOrNull { it.getId() == planet.id }) }
     return World(planetPairs.map { pair ->
         val serializedPlanet = pair.first
         val original = pair.second!!
-        val neighbors = serializedPlanet.neighbours.map { id -> withoutNeighborns.planets!!.firstOrNull { it.getId() == id } }
+        val neighbors = serializedPlanet.neighbours.map { id -> withoutNeighbors.planets!!.firstOrNull { it.getId() == id } }
         neighbors.forEach { original.addNeighbours(it) }
         original
     })
