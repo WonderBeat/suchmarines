@@ -2,7 +2,6 @@ package org.wow.learning
 
 import org.wow.logger.World
 import com.epam.starwors.galaxy.Planet
-import com.epam.starwors.galaxy.PlanetType
 
 fun Planet.enemiesNeighbours(): List<Planet> = this.getNeighbours()!!.filter { it.getOwner() != this.getOwner() && it
         .getOwner().isNotEmpty() }
@@ -37,19 +36,14 @@ fun Planet.enemiesAroundPercentage(): Int {
     }
 }
 
+fun Planet.volumePercentage(): Double = this.getUnits() * 100.0 / this.getType()!!.getLimit()
+
+
 /**
  * Planet power
- *
- * All planets power = 100%
- * Current planet = ?
  */
 fun Planet.planetPower(world: World): Double
-    = 100 * absolutePlanetPower(this) / world.planets!!.fold(0.0) { acc, it -> acc + absolutePlanetPower(it) }
-
-private fun absolutePlanetPower(planet: Planet): Double
-        = planet.getUnits() * 100.0 / planet.getType()!!.getLimit() +
-          planet.getType()!!.getLimit() * 100.0 / PlanetType.TYPE_D.getLimit()
-
+    = this.getUnits().toDouble()
 
 /**
  * Isolation level %
