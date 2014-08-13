@@ -19,7 +19,6 @@ import java.io.File
 import org.wow.learning.vectorizers.planet.FeatureExtractor
 import org.wow.learning.enemiesAroundPercentage
 import org.wow.learning.friendsAroundPercentage
-import org.wow.learning.planetPower
 import org.wow.logic.PredictionAwareBot
 import org.wow.learning.vectorizers.Vectorizer
 import org.wow.learning.neutralNeighbours
@@ -36,6 +35,8 @@ import org.wow.learning.categorizers.inOutCategorizer
 import org.wow.learning.vectorizers.planet.PlanetState
 import org.springframework.core.io.FileSystemResource
 import java.io.DataOutputStream
+import org.wow.learning.volumePercentage
+import reactor.event.dispatch.ThreadPoolExecutorDispatcher
 
 fun allFilesInFolder(folder: String):List<File> {
     val list = File(folder).listFiles { it.extension.equals("dmp") }?.toArrayList()
@@ -53,13 +54,14 @@ fun main(args : Array<String>) {
     val categoriesCount = 201 // 0 - 200 inclusive
     val objectMapper = ObjectMapper()
     val env = Environment()
+    env.addDispatcher(Environment.THREAD_POOL, ThreadPoolExecutorDispatcher(3, 3))
 
 
     val planetFeaturesExtractors = listOf(
+            FeatureExtractor(ContinuousValueEncoder("planet-volume"), {s -> s.planet.volumePercentage()}),
             FeatureExtractor(ContinuousValueEncoder("enemies-around"), {state -> state.planet.enemiesAroundPercentage().toDouble()}),
-            FeatureExtractor(ContinuousValueEncoder("neutrals-around"), {state -> state.planet.neutralNeighbours().size.toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("friends-around"), {s -> s.planet.friendsAroundPercentage().toDouble()}),
-            FeatureExtractor(ContinuousValueEncoder("planet-power"), {s -> s.planet.planetPower(s.world)}),
+            FeatureExtractor(ContinuousValueEncoder("neutrals-around"), {state -> state.planet.neutralNeighbours().size.toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("planet-size"), {s -> s.planet.getType()!!.ordinal().toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("planet-connections"), {s -> s.planet.getNeighbours()!!.size.toDouble()})
     )
@@ -107,10 +109,10 @@ fun createDb(regression: AdaptiveLogisticRegression,
     val learner = MachineLearner(::inOutCategorizer, firstStateInTransitionVectorizer, regression)
     val fileBasedLearner = FileBasedLearner(env, allFilesInFolder(dumpFolder),
             LogsParser(objectMapper), bestMovesInGameFinder)
-    val file = File(dbFile)
-    file.createNewFile()
     val machineLearnerPrepared = fileBasedLearner.learn(learner)
     machineLearnerPrepared.learner.close()
+    val file = File(dbFile)
+    file.createNewFile()
     machineLearnerPrepared.learner.write(DataOutputStream(FileSystemResource(file).getOutputStream()!!))
 }
 
