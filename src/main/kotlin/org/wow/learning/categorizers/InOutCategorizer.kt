@@ -4,7 +4,7 @@ import org.wow.learning.vectorizers.planet.PlanetTransition
 
 private val estimatorsList = listOf(::planetWasCaptured, ::planetMadeNoMove, ::planetSurroundedByNeutrals,
         ::planetSurroundedByNoEnemies, ::planetSurroundedByNoFriends,
-        ::planetWasCapturedByCurrentPlanet, ::frontLiner, ::noPlanetsWereCaptured)
+        ::planetWasCapturedByCurrentPlanet, ::frontLiner, ::noPlanetsWereCaptured, ::estimateMoveWithUnitsDifference)
 
 fun inOutCategorizer(transition: PlanetTransition): Int {
     val move = estimatorsList.first { it.invoke(transition) != UndefinedMove }(transition)
