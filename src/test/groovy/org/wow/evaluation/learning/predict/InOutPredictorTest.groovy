@@ -1,12 +1,10 @@
 package org.wow.evaluation.learning.predict
-
 import com.epam.starwors.galaxy.Planet
 import kotlin.Function1
 import org.apache.mahout.math.RandomAccessSparseVector
 import org.wow.learning.categorizers.InOutMove
 import org.wow.learning.predict.InOutPlanetPredictor
 import org.wow.learning.vectorizers.Vectorizer
-import org.wow.logger.World
 import spock.lang.Specification
 
 class InOutPredictorTest extends Specification {
@@ -19,7 +17,7 @@ class InOutPredictorTest extends Specification {
                                                  {p -> new RandomAccessSparseVector(3)} as Vectorizer<Planet, org.apache.mahout.math.Vector>)
 
         when:
-        def prediction = predictor.predict(new Planet(units: 1000), new World())
+        def prediction = predictor.predict(new Planet(units: 1000), [])
 
         then:
         assert prediction == expectation

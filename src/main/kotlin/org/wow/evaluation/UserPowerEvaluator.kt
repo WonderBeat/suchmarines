@@ -1,6 +1,6 @@
 package org.wow.evaluation
 
-import org.wow.logger.World
+import com.epam.starwors.galaxy.Planet
 
 /**
  *  Considers some different values with coefficients when evaluates player's power.
@@ -13,14 +13,14 @@ public class UserPowerEvaluator : Evaluator {
     private val planetsCoefficient = 0.2
     private val regenerationRateCoefficient = 0.3
 
-    override fun evaluate(playerName: String, world: World): Double {
+    override fun evaluate(playerName: String, world: Collection<Planet>): Double {
         var units: Double = 0.0
         var planets: Double = 0.0
         var regenerationRate: Double = 0.0
-        var maxPossibleUnits = world.planets!!.fold(0, { (acc, planet) -> acc + planet.getType()!!.getLimit() })
-        var maxPossiblePlanets = world.planets.size()
-        var maxRegenRate = world.planets.fold(0, { (acc, planet) -> acc + planet.getType()!!.getIncrement() })
-        var playersPlanets = world.planets.filter { it.getOwner().equals(playerName) }
+        var maxPossibleUnits = world.fold(0, { (acc, planet) -> acc + planet.getType()!!.getLimit() })
+        var maxPossiblePlanets = world.size()
+        var maxRegenRate = world.fold(0, { (acc, planet) -> acc + planet.getType()!!.getIncrement() })
+        var playersPlanets = world.filter { it.getOwner().equals(playerName) }
         playersPlanets.forEach {
             units += it.getUnits()
             planets++

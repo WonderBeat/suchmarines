@@ -1,4 +1,4 @@
-<configuration scan="true" scanPeriod="10 minutes">
+<configuration scan="true" scanPeriod="10 minutes" debug="true">
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/suchmarines.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -20,11 +20,11 @@
         </encoder>
     </appender>
 
-    <logger name="org.wow" level="debug" additivity="false">
+    <logger name="org.apache" level="debug" additivity="false">
         <appender-ref ref="CONSOLE" />
     </logger>
 
-    <root level="WARN">
+    <root level="TRACE">
         <appender-ref ref="FILE" />
         <appender-ref ref="CONSOLE" />
     </root>

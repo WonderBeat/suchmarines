@@ -92,7 +92,8 @@ fun allEnemiesStronger(transition: PlanetTransition): Move = when {
     transition.from.planet.neutralNeighbours().size > 0 -> UndefinedMove
     transition.from.planet.unitsAfterRegeneration() < transition.to.planet.getUnits() &&
             transition.from.planet.enemiesNeighbours().all { it.planetPower(transition.from.world) >
-            transition.from.planet.planetPower(transition.from.world) } -> InOutMove(`in` = transition.unitsDifferencePercentage())
+            transition.from.planet.planetPower(transition.from.world) } -> InOutMove(`in` = transition
+            .unitsDifferencePercentage())
     else -> UndefinedMove
 }
 

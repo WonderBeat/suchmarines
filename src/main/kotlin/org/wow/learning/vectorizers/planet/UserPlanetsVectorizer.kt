@@ -10,7 +10,7 @@ public class UserPlanetsVectorizer(val planetVectorizer: Vectorizer<PlanetState,
      * Vectorizes all user planets. one by one. with 'planetVectorizer'
      */
     override fun vectorize(input: Transition): List<Vector> =
-            input.sourceWorld.planets!!.filter { it.getOwner() == input.playerName }
+            input.sourceWorld.filter { it.getOwner() == input.playerName }
                     .map { planetVectorizer.vectorize(PlanetState(input.sourceWorld, it)) }
 
 }

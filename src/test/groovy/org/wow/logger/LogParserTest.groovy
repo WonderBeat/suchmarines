@@ -2,8 +2,8 @@ package org.wow.logger
 
 import com.epam.starwors.galaxy.PlanetType
 import org.wow.logger.SerializedPlanet
-import org.wow.logger.SerializedWorld
-import org.wow.logger.World
+import org.wow.logger.SerializedGameTurn
+import org.wow.logger.GameTurn
 import spock.lang.Specification
 
 class LogParserTest extends Specification {
@@ -12,12 +12,15 @@ class LogParserTest extends Specification {
         given:
         def planetOne = new SerializedPlanet("12", "", 12, PlanetType.TYPE_A, ['13'])
         def planetTwo = new SerializedPlanet("13", "", 12, PlanetType.TYPE_B, ['12'])
+        def move = new SerializedMove(10, 11, 12)
 
 
         when:
-        World world = org.wow.logger.LoggerPackage.serializedWorldToWorld(new SerializedWorld([planetOne, planetTwo]))
+        GameTurn gameTurn = org.wow.logger.LoggerPackage.serializedGameTurnToGameTurn(
+                new SerializedGameTurn([planetOne, planetTwo], [move]))
 
         then:
-        assert world.planets.first().neighbours.first().id == '13'
+        assert gameTurn.planets.first().neighbours.first().id == '13'
+        assert gameTurn.moves.first().from == 10
     }
 }

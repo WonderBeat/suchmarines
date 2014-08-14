@@ -4,7 +4,7 @@ import com.epam.starwors.bot.Logic
 import com.epam.starwors.galaxy.Planet
 import com.epam.starwors.galaxy.Move
 import org.wow.learning.predict.Predictor
-import org.wow.logger.World
+import org.wow.logger.GameTurn
 import org.wow.learning.planetPower
 import org.slf4j.LoggerFactory
 import org.wow.learning.enemiesNeighbours
@@ -29,8 +29,8 @@ public class PredictionAwareBot(val username: String,
 
         val moves = readyForUnitsTransfer.flatMap { readyToSendPlanet ->
             val couldSend = readyToSendPlanet.planet.percentUsers(readyToSendPlanet.predict.out)
-            val leastPowerEnemy = readyToSendPlanet.planet.enemiesNeighbours().minBy { it.planetPower(World(planets)) }
-            val leastPowerFriend = readyToSendPlanet.planet.friendsNeighbours().minBy { it.planetPower(World(planets)) }
+            val leastPowerEnemy = readyToSendPlanet.planet.enemiesNeighbours().minBy { it.planetPower(planets) }
+            val leastPowerFriend = readyToSendPlanet.planet.friendsNeighbours().minBy { it.planetPower(planets) }
             val neutralBiggest = readyToSendPlanet.planet.neutralNeighbours().sortBy { it.getType()!!.getLimit() }.first
             val requiresDefendNeighbours = requiresDefend.filter { readyToSendPlanet.planet.getNeighbours()!!.contains(it) }
 
@@ -73,7 +73,7 @@ public class PredictionAwareBot(val username: String,
 
     fun predictPlanets(planets: Collection<Planet>): List<PlanetMovePredict> {
         return planets.filter { it.getOwner() == username }.map {
-            PlanetMovePredict(it, inOutPredictor.predict(it, World(planets)))
+            PlanetMovePredict(it, inOutPredictor.predict(it, planets))
         }
     }
 

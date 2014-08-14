@@ -3,7 +3,7 @@ import com.epam.starwors.galaxy.Planet
 import com.epam.starwors.galaxy.PlanetType
 import org.wow.learning.vectorizers.planet.PlanetState
 import org.wow.learning.vectorizers.planet.PlanetTransition
-import org.wow.logger.World
+import org.wow.logger.GameTurn
 import spock.lang.Specification
 
 class CategorizersTest extends Specification {
@@ -18,10 +18,7 @@ class CategorizersTest extends Specification {
         def toPlanet = friend('1')
         toPlanet.setUnits(25)
 
-        def from = new World([fromPlanet])
-        def to = new World([toPlanet])
-
-        def transition = new PlanetTransition(new PlanetState(from, fromPlanet), new PlanetState(to, toPlanet))
+        def transition = new PlanetTransition(new PlanetState([fromPlanet], fromPlanet), new PlanetState([toPlanet], toPlanet))
 
         when:
         InOutMove move = org.wow.learning.categorizers.CategorizersPackage.estimateMoveWithUnitsDifference(transition)
@@ -36,10 +33,7 @@ class CategorizersTest extends Specification {
         def fromPlanet = friend('1')
         def toPlanet = enemy('1')
 
-        def from = new World([fromPlanet])
-        def to = new World([toPlanet])
-
-        def transition = new PlanetTransition(new PlanetState(from, fromPlanet), new PlanetState(to, toPlanet))
+        def transition = new PlanetTransition(new PlanetState([fromPlanet], fromPlanet), new PlanetState([toPlanet], toPlanet))
 
         when:
         InOutMove move = org.wow.learning.categorizers.CategorizersPackage.planetWasCaptured(transition)
@@ -54,9 +48,8 @@ class CategorizersTest extends Specification {
         def toPlanet = friend('1')
         toPlanet.setUnits((fromPlanet.getUnits() + fromPlanet.getUnits().toDouble() / 100 * fromPlanet.getType().increment).toInteger())
 
-        def from = new World([fromPlanet])
-        def to = new World([toPlanet])
-        def transition = new PlanetTransition(new PlanetState(from, fromPlanet), new PlanetState(to, toPlanet))
+        def transition =
+                new PlanetTransition(new PlanetState([fromPlanet], fromPlanet), new PlanetState([toPlanet], toPlanet))
 
         when:
         InOutMove move = org.wow.learning.categorizers.CategorizersPackage.planetMadeNoMove(transition)
@@ -75,10 +68,8 @@ class CategorizersTest extends Specification {
         fromPlanet.addNeighbours(neutral)
         toPlanet.addNeighbours(neutral)
 
-        def from = new World([fromPlanet, neutral])
-        def to = new World([toPlanet, neutral])
-
-        def transition = new PlanetTransition(new PlanetState(from, fromPlanet), new PlanetState(to, toPlanet))
+        def transition = new PlanetTransition(new PlanetState([fromPlanet, neutral], fromPlanet),
+                new PlanetState([toPlanet, neutral], toPlanet))
 
         when:
         InOutMove move = org.wow.learning.categorizers.CategorizersPackage.planetSurroundedByNoEnemies(transition)
@@ -97,10 +88,7 @@ class CategorizersTest extends Specification {
         fromPlanet.addNeighbours(enemy)
         toPlanet.addNeighbours(enemy)
 
-        def from = new World([fromPlanet, enemy])
-        def to = new World([toPlanet, enemy])
-
-        def transition = new PlanetTransition(new PlanetState(from, fromPlanet), new PlanetState(to, toPlanet))
+        def transition = new PlanetTransition(new PlanetState([fromPlanet, enemy], fromPlanet), new PlanetState([toPlanet, enemy], toPlanet))
 
         when:
         InOutMove move = org.wow.learning.categorizers.CategorizersPackage.planetSurroundedByNoFriends(transition)

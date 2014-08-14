@@ -1,6 +1,6 @@
 package org.wow.learning
 
-import org.wow.logger.World
+import org.wow.logger.GameTurn
 import com.epam.starwors.galaxy.Planet
 import com.epam.starwors.galaxy.PlanetType
 
@@ -43,8 +43,8 @@ fun Planet.enemiesAroundPercentage(): Int {
  * All planets power = 100%
  * Current planet = ?
  */
-fun Planet.planetPower(world: World): Double
-    = 100 * absolutePlanetPower(this) / world.planets!!.fold(0.0) { acc, it -> acc + absolutePlanetPower(it) }
+fun Planet.planetPower(world: Collection<Planet>): Double
+    = 100 * absolutePlanetPower(this) / world.fold(0.0) { acc, it -> acc + absolutePlanetPower(it) }
 
 private fun absolutePlanetPower(planet: Planet): Double
         = planet.getUnits() * 100.0 / planet.getType()!!.getLimit() +

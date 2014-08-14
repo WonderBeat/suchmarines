@@ -1,7 +1,7 @@
 package org.wow.learning
 
 import java.io.File
-import org.wow.logger.World
+import org.wow.logger.GameTurn
 import org.slf4j.LoggerFactory
 import reactor.core.composable.spec.Promises
 import reactor.core.composable.spec.Streams
@@ -13,7 +13,7 @@ public class FileBasedLearner<T>(
                           val env: reactor.core.Environment,
                           val files: List<File>,
                           val parser: LogsParser,
-                          val vectorizer: (List<World>) -> List<T>) {
+                          val vectorizer: (List<GameTurn>) -> List<T>) {
 
     private val logger = LoggerFactory.getLogger(javaClass<FileBasedLearner<T>>())!!
 

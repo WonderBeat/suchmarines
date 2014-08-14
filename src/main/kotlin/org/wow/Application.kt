@@ -23,7 +23,7 @@ import org.wow.learning.planetPower
 import org.wow.logic.PredictionAwareBot
 import org.wow.learning.vectorizers.Vectorizer
 import org.wow.learning.neutralNeighbours
-import org.wow.logger.World
+import org.wow.logger.GameTurn
 import org.wow.learning.persist.FileClassifierProvider
 import org.apache.mahout.classifier.sgd.CrossFoldLearner
 import org.wow.learning.vectorizers.planet.transitionToPlanetTransition
@@ -36,6 +36,8 @@ import org.wow.learning.categorizers.inOutCategorizer
 import org.wow.learning.vectorizers.planet.PlanetState
 import org.springframework.core.io.FileSystemResource
 import java.io.DataOutputStream
+import org.apache.http.impl.client.HttpClients
+import org.wow.http.HttpGameClient
 
 fun allFilesInFolder(folder: String):List<File> {
     val list = File(folder).listFiles { it.extension.equals("dmp") }?.toArrayList()
@@ -48,8 +50,31 @@ fun allFilesInFolder(folder: String):List<File> {
 private val dbFile = "games.db"
 private val username = "suchbotwow"
 private val dumpFolder = "dump/"
+private val gameUrl = "176.192.95.4"
+private val port = 123
+private val key = ""
 
-fun main(args : Array<String>) {
+fun httpClient(): org.apache.http.client.HttpClient = HttpClients.createDefault()!!
+
+
+fun main(args: Array<String>) {
+    val httpClient = HttpGameClient(httpClient(), ObjectMapper(), "http://" + gameUrl)
+    httpClient.login(args.get(0), args.get(1))
+    val gameId = httpClient.startGame()
+    val gameLogger = GameLogger(ObjectMapper(), gameId , httpClient)
+    val machine = createMachineBot()
+    val game = SocketGame(gameUrl, port, key, machine.and(gameLogger))
+    print("Running....")
+    game.start()
+    httpClient.endGame(gameId)
+
+    val file = File(dumpFolder + DateTime.now()!!.toString("MMddhhmmss") + ".dmp")
+    file.getParentFile()!!.mkdirs();
+    file.createNewFile();
+    FileOutputStream(file).write(gameLogger.dump());
+}
+
+fun createMachineBot(): Logic {
     val categoriesCount = 201 // 0 - 200 inclusive
     val objectMapper = ObjectMapper()
     val env = Environment()
@@ -78,19 +103,7 @@ fun main(args : Array<String>) {
     var predictor = InOutPlanetPredictor(
             {(v: Vector) -> trainedClassifier.classifyFull(v)!! },
             planetVectorizer)
-
-    val gameLogger = GameLogger(objectMapper.writer()!!)
-
-
-    val game = SocketGame("176.192.95.4", 10040, "bzk6w4awpfdhbdnnqv4ziaocvjkumbtn",
-            filterEmptyWorlds(gameLogger).and(PredictionAwareBot(username, predictor)))
-    print("Running....")
-    game.start()
-
-    val file = File(dumpFolder + DateTime.now()!!.toString("MMddhhmmss") + ".dmp")
-    file.getParentFile()!!.mkdirs();
-    file.createNewFile();
-    FileOutputStream(file).write(gameLogger.dump());
+    return PredictionAwareBot(username, predictor)
 }
 
 fun createDb(regression: AdaptiveLogisticRegression,
@@ -98,7 +111,7 @@ fun createDb(regression: AdaptiveLogisticRegression,
              env: Environment,
              objectMapper: ObjectMapper) {
     val bestFinder = BestTransitionsFinder(UserPowerEvaluator())
-    val bestMovesInGameFinder = { (game: List<World>) ->
+    val bestMovesInGameFinder = { (game: List<GameTurn>) ->
         bestFinder.findBestTransitions(game).flatMap(::transitionToPlanetTransition) }
     val firstStateInTransitionVectorizer = object: Vectorizer<PlanetTransition, Vector> {
         override fun vectorize(input: PlanetTransition) = planetVectorizer.vectorize(input.from)
