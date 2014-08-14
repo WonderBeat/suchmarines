@@ -9,8 +9,8 @@ import org.wow.logger.GameTurn
  */
 public class UserPowerEvaluator : Evaluator {
 
-    private val unitsCoefficient = 0.5
-    private val planetsCoefficient = 0.2
+    private val unitsCoefficient = 0.1
+    private val planetsCoefficient = 0.6
     private val regenerationRateCoefficient = 0.3
 
     override fun evaluate(playerName: String, world: GameTurn): Double {
@@ -26,9 +26,8 @@ public class UserPowerEvaluator : Evaluator {
             planets++
             regenerationRate += if(it.getUnits() < it.getType()!!.getIncrement()) it.getType()!!.getIncrement() else 0
         }
-        val score = unitsCoefficient * units / maxPossibleUnits + planetsCoefficient * planets / maxPossiblePlanets +
+        return unitsCoefficient * units / maxPossibleUnits + planetsCoefficient * planets / maxPossiblePlanets +
                 regenerationRateCoefficient * regenerationRate / maxRegenRate
-        return score
     }
 
 }

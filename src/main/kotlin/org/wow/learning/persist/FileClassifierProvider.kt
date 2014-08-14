@@ -17,8 +17,13 @@ public class FileClassifierProvider <T : Writable>(databaseFilename: String, val
 
     override fun provide(): AbstractVectorClassifier {
         val learner = emptyLearnerBuilder()
-        learner.readFields(DataInputStream(database.getInputStream()!!))
-        return classifierExtractor(learner)
+        return when {
+            database.exists() -> {
+                learner.readFields(DataInputStream(database.getInputStream()!!))
+                classifierExtractor(learner)
+            }
+            else -> classifierExtractor(learner)
+        }
     }
 
 }

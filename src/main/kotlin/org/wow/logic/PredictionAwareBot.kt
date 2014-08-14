@@ -22,7 +22,7 @@ public class PredictionAwareBot(val username: String,
 
     override fun step(planets: Collection<Planet>?): MutableCollection<Move>? {
         val predictsForPlanets = predictPlanets(planets!!)
-        logger.info(predictsForPlanets.toString())
+        logger.info(predictsForPlanets.map { it.predict }.toString())
 
         val requiresDefend = predictsForPlanets.filter { it.predict.`in` > 0 }
         val readyForUnitsTransfer = predictsForPlanets.filter { it.predict.out > 0 }
