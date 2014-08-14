@@ -38,30 +38,29 @@ import org.springframework.core.io.FileSystemResource
 import java.io.DataOutputStream
 import org.apache.http.impl.client.HttpClients
 import org.wow.http.HttpGameClient
-
-fun allFilesInFolder(folder: String):List<File> {
-    val list = File(folder).listFiles { it.extension.equals("dmp") }?.toArrayList()
-    return when {
-        list == null -> arrayListOf()
-        else -> list
-    }
-}
+import com.fasterxml.jackson.databind.DeserializationFeature
 
 private val dbFile = "games.db"
 private val username = "suchbotwow"
 private val dumpFolder = "dump/"
 private val gameUrl = "176.192.95.4"
-private val port = 123
-private val key = ""
+private val port = 10040
+private val key = "bzk6w4awpfdhbdnnqv4ziaocvjkumbtn"
 
 fun httpClient(): org.apache.http.client.HttpClient = HttpClients.createDefault()!!
 
+fun jsonMapper(): ObjectMapper {
+    val jsonMapper = ObjectMapper()
+    jsonMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    return jsonMapper
+}
 
 fun main(args: Array<String>) {
-    val httpClient = HttpGameClient(httpClient(), ObjectMapper(), "http://" + gameUrl)
+    val jsonMapper = jsonMapper()
+    val httpClient = HttpGameClient(httpClient(), jsonMapper, "http://" + gameUrl)
     httpClient.login(args.get(0), args.get(1))
     val gameId = httpClient.startGame()
-    val gameLogger = GameLogger(ObjectMapper(), gameId , httpClient)
+    val gameLogger = GameLogger(jsonMapper, gameId , httpClient)
     val machine = createMachineBot()
     val game = SocketGame(gameUrl, port, key, machine.and(gameLogger))
     print("Running....")
@@ -128,6 +127,14 @@ fun createDb(regression: AdaptiveLogisticRegression,
 }
 
 fun filterEmptyWorlds(delegate: Logic) = Logic { planets -> if(planets!!.empty) arrayListOf() else delegate.step(planets) }
+
+fun allFilesInFolder(folder: String):List<File> {
+    val list = File(folder).listFiles { it.extension.equals("dmp") }?.toArrayList()
+    return when {
+        list == null -> arrayListOf()
+        else -> list
+    }
+}
 
 fun Logic.and(other: Logic): Logic =
         Logic { planets-> this.step(planets)?.plus(other.step(planets)!!)?.toArrayList() }
