@@ -28,14 +28,9 @@ class GameLoggerTest extends Specification {
     def 'json map test'() {
         given:
         def mapper = new ObjectMapper()
-        def response = """{
-            "turnNumber": 2,
-            "playersActions": {
-                "actions": [
-                    { "to": 2, "from": 244, "unitCount": 45 }
-                ]
-            }
-        }"""
+        def response = """{"playersActions":{"planetOwners":[{"id":2608,"owner":"bot","unitsCount":59},
+                            {"id":2606,"owner":"bot","unitsCount":157},{"id":2607,"owner":"suchbotwow","unitsCount":1000}],
+                            "actions":[{"to":2606,"unitCount":37,"from":2608}]},"gameState":"started","turnNumber":23}"""
 
         when:
         def mapped = mapper.readValue(response, GameTurnResponse)
