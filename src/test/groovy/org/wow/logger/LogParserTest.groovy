@@ -21,6 +21,6 @@ class LogParserTest extends Specification {
 
         then:
         assert gameTurn.planets.first().neighbours.first().id == '13'
-        assert gameTurn.moves.first().from == 10
+        assert gameTurn.moves.first().from == "10"
     }
 }

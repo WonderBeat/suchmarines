@@ -2,22 +2,22 @@ package org.wow.evaluation.transition
 
 import org.wow.logger.GameTurn
 import org.wow.evaluation.Evaluator
-import com.epam.starwors.galaxy.Planet
 
 
-public data class Transition(val sourceWorld: Collection<Planet>, val resultWorld: Collection<Planet>,
-                             val playerName: String)
+public data class PlayerGameTurn(val from: GameTurn,
+                                 val to: GameTurn,
+                                 val playerName: String)
 
 public class BestTransitionsFinder(val evaluator: Evaluator) {
-    fun findBestTransitions(game: List<GameTurn>): Collection<Transition> {
+    fun findBestTransitions(game: List<GameTurn>): List<PlayerGameTurn> {
         val players = listPlayersOnMap(game)
         val transitions = pairs(game).map { pair ->
             players.map { player ->
-                Transition(pair.first.planets, pair.second.planets, player!!)
+                PlayerGameTurn(pair.first, pair.second, player!!)
             }
         }
         return transitions.map {
-            it.maxBy { evaluator.difference(it.playerName, it.sourceWorld, it.resultWorld) }!! }
+            it.maxBy { evaluator.difference(it.playerName, it.from, it.to) }!! }
     }
 
     fun listPlayersOnMap(game: List<GameTurn>): Set<String?> {

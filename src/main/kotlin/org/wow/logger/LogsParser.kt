@@ -6,10 +6,10 @@ import java.io.File
 
 public data class GameTurn(val planets: Collection<Planet>, val moves: List<PlayerMove>)
 
-public data class PlayerMove(val from: Int, val to: Int, unitCount: Int)
+public data class PlayerMove(val from: String, val to: String, unitCount: Int)
 
 fun serializedGameTurnToGameTurn(serialized: SerializedGameTurn): GameTurn {
-    val moves = serialized.moves.map { PlayerMove(it.from, it.to, it.unitCount) }
+    val moves = serialized.moves.map { PlayerMove(it.from.toString(), it.to.toString(), it.unitCount) }
     val withoutNeighborns = GameTurn(serialized.planets.map { Planet(it.id, it.owner, it.units, it.`type`,
             listOf()) }, moves)
     val planetPairs = serialized.planets.map { planet -> Pair(planet, withoutNeighborns.planets.firstOrNull { it.getId() == planet.id }) }

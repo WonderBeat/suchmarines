@@ -19,7 +19,6 @@ import java.io.File
 import org.wow.learning.vectorizers.planet.FeatureExtractor
 import org.wow.learning.enemiesAroundPercentage
 import org.wow.learning.friendsAroundPercentage
-import org.wow.learning.planetPower
 import org.wow.logic.PredictionAwareBot
 import org.wow.learning.vectorizers.Vectorizer
 import org.wow.learning.neutralNeighbours
@@ -33,12 +32,12 @@ import org.wow.logger.LogsParser
 import org.wow.learning.FileBasedLearner
 import org.wow.learning.MachineLearner
 import org.wow.learning.categorizers.inOutCategorizer
-import org.wow.learning.vectorizers.planet.PlanetState
 import org.springframework.core.io.FileSystemResource
 import java.io.DataOutputStream
 import org.apache.http.impl.client.HttpClients
 import org.wow.http.HttpGameClient
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.epam.starwors.galaxy.Planet
 
 private val dbFile = "games.db"
 private val username = "suchbotwow"
@@ -80,12 +79,13 @@ fun createMachineBot(): Logic {
 
 
     val planetFeaturesExtractors = listOf(
-            FeatureExtractor(ContinuousValueEncoder("enemies-around"), {state -> state.planet.enemiesAroundPercentage().toDouble()}),
-            FeatureExtractor(ContinuousValueEncoder("neutrals-around"), {state -> state.planet.neutralNeighbours().size.toDouble()}),
-            FeatureExtractor(ContinuousValueEncoder("friends-around"), {s -> s.planet.friendsAroundPercentage().toDouble()}),
-            FeatureExtractor(ContinuousValueEncoder("planet-power"), {s -> s.planet.planetPower(s.world)}),
-            FeatureExtractor(ContinuousValueEncoder("planet-size"), {s -> s.planet.getType()!!.ordinal().toDouble()}),
-            FeatureExtractor(ContinuousValueEncoder("planet-connections"), {s -> s.planet.getNeighbours()!!.size.toDouble()})
+            FeatureExtractor(ContinuousValueEncoder("enemies-around"), {it.enemiesAroundPercentage()
+                    .toDouble()}),
+            FeatureExtractor(ContinuousValueEncoder("neutrals-around"), { it.neutralNeighbours().size.toDouble()}),
+            FeatureExtractor(ContinuousValueEncoder("friends-around"), { it.friendsAroundPercentage().toDouble()}),
+            //FeatureExtractor(ContinuousValueEncoder("planet-power"), {it.planetPower()}),
+            FeatureExtractor(ContinuousValueEncoder("planet-size"), {it.getType()!!.ordinal().toDouble()}),
+            FeatureExtractor(ContinuousValueEncoder("planet-connections"), {it.getNeighbours()!!.size.toDouble()})
     )
     val regressionBuilder = { AdaptiveLogisticRegression(categoriesCount, planetFeaturesExtractors.size, L1()) }
     val extractClassifierFromRegression: (AdaptiveLogisticRegression) -> CrossFoldLearner = { it.close(); it.getBest()!!
@@ -106,7 +106,7 @@ fun createMachineBot(): Logic {
 }
 
 fun createDb(regression: AdaptiveLogisticRegression,
-             planetVectorizer: Vectorizer<PlanetState,Vector>,
+             planetVectorizer: Vectorizer<Planet, Vector>,
              env: Environment,
              objectMapper: ObjectMapper) {
     val bestFinder = BestTransitionsFinder(UserPowerEvaluator())

@@ -1,101 +1,11 @@
 package org.wow.learning.categorizers
 import com.epam.starwors.galaxy.Planet
 import com.epam.starwors.galaxy.PlanetType
-import org.wow.learning.vectorizers.planet.PlanetState
 import org.wow.learning.vectorizers.planet.PlanetTransition
 import org.wow.logger.GameTurn
 import spock.lang.Specification
 
-class CategorizersTest extends Specification {
-
-    Planet neutral() { new Planet('neutral', '', 0, PlanetType.TYPE_B, []) }
-    Planet friend(String id) { new Planet(id, 'adolf', 10, PlanetType.TYPE_A, []) }
-    Planet enemy(String id) { new Planet(id, 'mahmud', 10, PlanetType.TYPE_A, []) }
-
-    def 'planet with no enemies and friends'() {
-        given:
-        def fromPlanet = friend('1')
-        def toPlanet = friend('1')
-        toPlanet.setUnits(25)
-
-        def transition = new PlanetTransition(new PlanetState([fromPlanet], fromPlanet), new PlanetState([toPlanet], toPlanet))
-
-        when:
-        InOutMove move = org.wow.learning.categorizers.CategorizersPackage.estimateMoveWithUnitsDifference(transition)
-
-        then:
-        assert move.in > 0 && move.out == 0
-        assert move.in == 140, 'units amount was increased by 140%. type A planet regen rate 10% ->  25 - (10 + 1) * 100 / 10 '
-    }
-
-    def 'planet was captured during transition'() {
-        given:
-        def fromPlanet = friend('1')
-        def toPlanet = enemy('1')
-
-        def transition = new PlanetTransition(new PlanetState([fromPlanet], fromPlanet), new PlanetState([toPlanet], toPlanet))
-
-        when:
-        InOutMove move = org.wow.learning.categorizers.CategorizersPackage.planetWasCaptured(transition)
-
-        then:
-        assert move.in == 100, 'request defence!!'
-    }
-
-    def 'planet made no move'() {
-        given: 'planet state changed according regeneration rate'
-        def fromPlanet = friend('1')
-        def toPlanet = friend('1')
-        toPlanet.setUnits((fromPlanet.getUnits() + fromPlanet.getUnits().toDouble() / 100 * fromPlanet.getType().increment).toInteger())
-
-        def transition =
-                new PlanetTransition(new PlanetState([fromPlanet], fromPlanet), new PlanetState([toPlanet], toPlanet))
-
-        when:
-        InOutMove move = org.wow.learning.categorizers.CategorizersPackage.planetMadeNoMove(transition)
-
-        then:
-        assert move.in == 0 && move.out == 0, 'request defence!!'
-    }
-
-    def 'planet move with no enemies around should be estimated by units movement only'() {
-        given:
-        def fromPlanet = friend('1')
-        def toPlanet = friend('1')
-        def neutral = neutral()
-        toPlanet.setUnits(11) // according regeneration rate
-
-        fromPlanet.addNeighbours(neutral)
-        toPlanet.addNeighbours(neutral)
-
-        def transition = new PlanetTransition(new PlanetState([fromPlanet, neutral], fromPlanet),
-                new PlanetState([toPlanet, neutral], toPlanet))
-
-        when:
-        InOutMove move = org.wow.learning.categorizers.CategorizersPackage.planetSurroundedByNoEnemies(transition)
-
-        then:
-        assert move.in == 0 && move.out == 0
-    }
-
-    def 'planet surrounded by no friends could only attack'() {
-        given:
-        def fromPlanet = friend('1')
-        def toPlanet = friend('1')
-        def enemy = enemy('2')
-        toPlanet.setUnits(5) // planet attack!
-
-        fromPlanet.addNeighbours(enemy)
-        toPlanet.addNeighbours(enemy)
-
-        def transition = new PlanetTransition(new PlanetState([fromPlanet, enemy], fromPlanet), new PlanetState([toPlanet, enemy], toPlanet))
-
-        when:
-        InOutMove move = org.wow.learning.categorizers.CategorizersPackage.planetSurroundedByNoFriends(transition)
-
-        then:
-        assert move.in == 0 && move.out > 0
-    }
+class InOutMoveTest extends Specification {
 
     def 'InOut move convertors test'() {
         given:
