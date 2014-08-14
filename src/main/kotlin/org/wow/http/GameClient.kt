@@ -71,7 +71,7 @@ public class HttpGameClient(val client: HttpClient, val mapper: ObjectMapper, va
 
     override fun getMovesForPreviousTurn(gameId: String): List<SerializedMove> {
         val statusRequest =
-                HttpGet(URIBuilder(url + "/viewData.html")
+                HttpGet(URIBuilder(url + "/game/viewData.html")
                         .setParameter("gameId", gameId)!!
                         .setParameter("type", "PLAYERS_ACTIONS")!!
                         .build()!!);
