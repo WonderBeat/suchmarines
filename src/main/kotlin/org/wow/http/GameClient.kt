@@ -12,6 +12,7 @@ import org.wow.logger.SerializedMove
 import org.wow.logger.GameTurnResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.http.client.HttpClient
+import org.slf4j.LoggerFactory
 
 public class LoginException(): Exception()
 
@@ -27,6 +28,8 @@ trait GameClient {
 public class HttpGameClient(val client: HttpClient, val mapper: ObjectMapper, val url: String): GameClient {
 
     var context = HttpClientContext.create()
+
+    val logger = LoggerFactory.getLogger(javaClass<HttpGameClient>())!!
 
     override fun login(username: String, password: String) {
         val indexGet = HttpGet(url);
@@ -59,7 +62,9 @@ public class HttpGameClient(val client: HttpClient, val mapper: ObjectMapper, va
         training.releaseConnection()
         val gameIdRegexp = ".*var gameId = (\\d{5,30})<".toRegex()
         val matcher = gameIdRegexp.matcher(traningPage)
-        matcher.find()
+        if(!matcher.find()) {
+            logger.error(traningPage)
+        }
         return matcher.group(1)!!
     }
 

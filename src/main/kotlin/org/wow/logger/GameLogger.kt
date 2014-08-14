@@ -31,11 +31,14 @@ public class GameLogger(val serializer: ObjectMapper,
     var states: List<SerializedGameTurn> = arrayListOf()
 
     override fun step(world: Collection<Planet>?): MutableCollection<Move>? {
+        if(world!!.empty) {     // end of the game
+            return arrayListOf()
+        }
         if(states.last != null) {
             states.last!!.moves = client.getMovesForPreviousTurn(gameId)
         }
 
-        val serializedWorld = SerializedGameTurn(world!!.map {
+        val serializedWorld = SerializedGameTurn(world.map {
             SerializedPlanet(it.getId()!!,it.getOwner()!!, it.getUnits(), it.getType()!!,
                     it.getNeighbours()!!.map { it.getId()!! })
         })

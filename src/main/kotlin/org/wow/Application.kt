@@ -58,9 +58,9 @@ fun main(args: Array<String>) {
     val jsonMapper = jsonMapper()
     val httpClient = HttpGameClient(httpClient(), jsonMapper, "http://" + gameUrl)
     httpClient.login(args.get(0), args.get(1))
+    val machine = createMachineBot()
     val gameId = httpClient.startGame()
     val gameLogger = GameLogger(jsonMapper, gameId , httpClient)
-    val machine = createMachineBot()
     val game = SocketGame(gameUrl, port, key, machine.and(gameLogger))
     print("Running....")
     game.start()
@@ -78,12 +78,10 @@ fun createMachineBot(): Logic {
     val env = Environment()
 
 
-    val planetFeaturesExtractors = listOf(
-            FeatureExtractor(ContinuousValueEncoder("enemies-around"), {it.enemiesAroundPercentage()
-                    .toDouble()}),
+    val planetFeaturesExtractors = arrayListOf(
+            FeatureExtractor(ContinuousValueEncoder("enemies-around"), {it.enemiesAroundPercentage().toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("neutrals-around"), { it.neutralNeighbours().size.toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("friends-around"), { it.friendsAroundPercentage().toDouble()}),
-            //FeatureExtractor(ContinuousValueEncoder("planet-power"), {it.planetPower()}),
             FeatureExtractor(ContinuousValueEncoder("planet-size"), {it.getType()!!.ordinal().toDouble()}),
             FeatureExtractor(ContinuousValueEncoder("planet-connections"), {it.getNeighbours()!!.size.toDouble()})
     )
@@ -119,10 +117,10 @@ fun createDb(regression: AdaptiveLogisticRegression,
     val learner = MachineLearner(::inOutCategorizer, firstStateInTransitionVectorizer, regression)
     val fileBasedLearner = FileBasedLearner(env, allFilesInFolder(dumpFolder),
             LogsParser(objectMapper), bestMovesInGameFinder)
-    val file = File(dbFile)
-    file.createNewFile()
     val machineLearnerPrepared = fileBasedLearner.learn(learner)
     machineLearnerPrepared.learner.close()
+    val file = File(dbFile)
+    file.createNewFile()
     machineLearnerPrepared.learner.write(DataOutputStream(FileSystemResource(file).getOutputStream()!!))
 }
 

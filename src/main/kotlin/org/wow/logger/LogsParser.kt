@@ -11,7 +11,7 @@ public data class PlayerMove(val from: String, val to: String, unitCount: Int)
 fun serializedGameTurnToGameTurn(serialized: SerializedGameTurn): GameTurn {
     val moves = serialized.moves.map { PlayerMove(it.from.toString(), it.to.toString(), it.unitCount) }
     val withoutNeighborns = GameTurn(serialized.planets.map { Planet(it.id, it.owner, it.units, it.`type`,
-            listOf()) }, moves)
+            arrayListOf()) }, moves)
     val planetPairs = serialized.planets.map { planet -> Pair(planet, withoutNeighborns.planets.firstOrNull { it.getId() == planet.id }) }
     return GameTurn(planetPairs.map { pair ->
         val serializedPlanet = pair.first
