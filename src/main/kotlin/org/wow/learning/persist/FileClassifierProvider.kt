@@ -6,24 +6,16 @@ import java.io.DataInputStream
 import org.apache.mahout.classifier.AbstractVectorClassifier
 import org.slf4j.LoggerFactory
 
-public class FileClassifierProvider <T : Writable>(databaseFilename: String, val emptyLearnerBuilder: () -> T,
-                                                   val classifierExtractor: (T) -> AbstractVectorClassifier):
-        ClassifierProvider
+public class FileClassifierProvider <T : Writable>(databaseFilename: String)
     {
 
     private val logger = LoggerFactory.getLogger(javaClass<FileClassifierProvider<T>>())!!
 
     private val database = FileSystemResource(databaseFilename)
 
-    override fun provide(): AbstractVectorClassifier {
-        val learner = emptyLearnerBuilder()
-        return when {
-            database.exists() -> {
-                learner.readFields(DataInputStream(database.getInputStream()!!))
-                classifierExtractor(learner)
-            }
-            else -> classifierExtractor(learner)
-        }
+    fun provide(learner: T): T {
+        learner.readFields(DataInputStream(database.getInputStream()!!))
+        return learner
     }
 
 }

@@ -10,13 +10,15 @@ import spock.lang.Specification
 class GameLoggerTest extends Specification {
 
 
-    def 'dump and read World with message-pack'() {
+    def 'dump and read'() {
         given:
         def objectMapper = new ObjectMapper(new SmileFactory())
         GameClient httpClientMock = Mock()
+        httpClientMock.getMovesForPreviousTurn(_) >> []
         def logger = new GameLogger(objectMapper, "", httpClientMock)
 
         when:
+        logger.step([new Planet("12", "", 12, PlanetType.TYPE_B, [])])
         logger.step([new Planet("12", "", 12, PlanetType.TYPE_B, [])])
         def out = logger.dump()
         SerializedGameTurn[] world = objectMapper.readValue(out, SerializedGameTurn[].class)
@@ -39,7 +41,7 @@ class GameLoggerTest extends Specification {
 
         then:
         assert mapped.turnNumber == 23
-        assert mapped.playersActions.actions.first().to == 2606
+        assert mapped.playersActions.actions.first().to == "2606"
     }
 
 
@@ -47,6 +49,7 @@ class GameLoggerTest extends Specification {
         given:
         def objectMapper = new ObjectMapper(new SmileFactory())
         GameClient httpClientMock = Mock()
+        httpClientMock.getMovesForPreviousTurn(_) >> []
         def logger = new GameLogger(objectMapper, "", httpClientMock)
         def planetOne = new Planet("12", "", 12, PlanetType.TYPE_A, [])
         def planetTwo = new Planet("13", "", 12, PlanetType.TYPE_B, [])
@@ -54,6 +57,7 @@ class GameLoggerTest extends Specification {
         planetTwo.addNeighbours(planetOne)
 
         when:
+        logger.step([planetOne, planetTwo])
         logger.step([planetOne, planetTwo])
         def out = logger.dump()
         SerializedGameTurn[] world = objectMapper.readValue(out, SerializedGameTurn[].class)

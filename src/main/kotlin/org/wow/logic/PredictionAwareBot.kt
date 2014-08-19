@@ -4,7 +4,6 @@ import com.epam.starwors.bot.Logic
 import com.epam.starwors.galaxy.Planet
 import com.epam.starwors.galaxy.Move
 import org.wow.learning.predict.Predictor
-import org.wow.logger.GameTurn
 import org.wow.learning.planetPower
 import org.slf4j.LoggerFactory
 import org.wow.learning.enemiesNeighbours
@@ -22,15 +21,15 @@ public class PredictionAwareBot(val username: String,
 
     override fun step(planets: Collection<Planet>?): MutableCollection<Move>? {
         val predictsForPlanets = predictPlanets(planets!!)
-        logger.info(predictsForPlanets.map { it.predict }.toString())
+        logger.info(predictsForPlanets.toString())
 
         val requiresDefend = predictsForPlanets.filter { it.predict.`in` > 0 }
         val readyForUnitsTransfer = predictsForPlanets.filter { it.predict.out > 0 }
 
         val moves = readyForUnitsTransfer.flatMap { readyToSendPlanet ->
             val couldSend = readyToSendPlanet.planet.percentUsers(readyToSendPlanet.predict.out)
-            val leastPowerEnemy = readyToSendPlanet.planet.enemiesNeighbours().minBy { it.planetPower(planets) }
-            val leastPowerFriend = readyToSendPlanet.planet.friendsNeighbours().minBy { it.planetPower(planets) }
+            val leastPowerEnemy = readyToSendPlanet.planet.enemiesNeighbours().minBy { it.planetPower() }
+            val leastPowerFriend = readyToSendPlanet.planet.friendsNeighbours().minBy { it.planetPower() }
             val neutralBiggest = readyToSendPlanet.planet.neutralNeighbours().sortBy { it.getType()!!.getLimit() }.first
             val requiresDefendNeighbours = requiresDefend.filter { readyToSendPlanet.planet.getNeighbours()!!.contains(it) }
 

@@ -11,14 +11,22 @@ public data class PlayerGameTurn(val from: GameTurn,
 public class BestTransitionsFinder(val evaluator: Evaluator) {
     fun findBestTransitions(game: List<GameTurn>): List<PlayerGameTurn> {
         val players = listPlayersOnMap(game)
-        val transitions = pairs(game).map { pair ->
-            players.map { player ->
-                PlayerGameTurn(pair.first, pair.second, player!!)
+        val best = pairs(game).map { gameTurnPair ->
+            val playersTurns = players.map { player ->
+                PlayerGameTurn(gameTurnPair.first, gameTurnPair.second, player!!)
             }
-        }
-        return transitions.map {
-            it.maxBy { evaluator.difference(it.playerName, it.from, it.to) }!! }
+            findBestPlayerTurn(playersTurns)
+        }.filterNotNull()
+        return best
     }
+
+    fun findBestPlayerTurn(turns: List<PlayerGameTurn>): PlayerGameTurn? =
+        turns.map { Pair(evaluateTurn(it), it) }
+             .filter { it.first > 0 }
+             .sortBy { it.first }
+             .last?.second
+
+    fun evaluateTurn(turn: PlayerGameTurn): Double = evaluator.difference(turn.playerName, turn.from, turn.to)
 
     fun listPlayersOnMap(game: List<GameTurn>): Set<String?> {
         return game.first().planets.map { it.getOwner() }.filterNot { it!!.isEmpty() }.distinct()

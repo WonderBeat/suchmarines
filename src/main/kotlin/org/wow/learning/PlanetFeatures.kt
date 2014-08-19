@@ -1,8 +1,6 @@
 package org.wow.learning
 
-import org.wow.logger.GameTurn
 import com.epam.starwors.galaxy.Planet
-import com.epam.starwors.galaxy.PlanetType
 
 fun Planet.enemiesNeighbours(): List<Planet> = this.getNeighbours()!!.filter { it.getOwner() != this.getOwner() && it
         .getOwner().isNotEmpty() }
@@ -16,40 +14,44 @@ fun Collection<Planet>.sumUnits(): Int = this.fold(0) { acc, it -> acc + it.getU
 /**
  * Enemies around percentage
  */
-fun Planet.friendsAroundPercentage(): Int {
+fun Planet.friendsAroundPercentage(): Double {
     val allUnits = this.getNeighbours()!!.sumUnits()
     val friendUnits = this.friendsNeighbours().sumUnits()
     return when {
-        allUnits == 0 -> 0
-        else -> (100 * friendUnits) / allUnits
+        allUnits == 0 -> 0.0
+        else -> (100.0 * friendUnits) / allUnits
+    }
+}
+
+fun Planet.neutralAroundPercentage(): Double {
+    val allUnits = this.getNeighbours()!!.sumUnits()
+    val neutral = this.neutralNeighbours().sumUnits()
+    return when {
+        allUnits == 0 -> 0.0
+        else -> (100.0 * neutral) / allUnits
     }
 }
 
 /**
  * Enemies around percentage
  */
-fun Planet.enemiesAroundPercentage(): Int {
+fun Planet.enemiesAroundPercentage(): Double {
     val allUnits = this.getNeighbours()!!.sumUnits()
     val enemyUnits = this.enemiesNeighbours().sumUnits()
     return when {
-        allUnits == 0 -> 0
-        else -> (100 * enemyUnits) / allUnits
+        allUnits == 0 -> 0.0
+        else -> (100.0 * enemyUnits) / allUnits
     }
 }
 
+fun Planet.volumePercentage(): Double = this.getUnits() * 100.0 / this.getType()!!.getLimit()
+
+
 /**
  * Planet power
- *
- * All planets power = 100%
- * Current planet = ?
  */
-fun Planet.planetPower(world: Collection<Planet>): Double
-    = 100 * absolutePlanetPower(this) / world.fold(0.0) { acc, it -> acc + absolutePlanetPower(it) }
-
-private fun absolutePlanetPower(planet: Planet): Double
-        = planet.getUnits() * 100.0 / planet.getType()!!.getLimit() +
-          planet.getType()!!.getLimit() * 100.0 / PlanetType.TYPE_D.getLimit()
-
+fun Planet.planetPower(): Double
+        = this.getUnits().toDouble()
 
 /**
  * Isolation level %

@@ -8,11 +8,12 @@ import org.apache.http.util.EntityUtils
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.client.protocol.HttpClientContext
 import org.apache.http.Consts
-import org.wow.logger.SerializedMove
 import org.wow.logger.GameTurnResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.http.client.HttpClient
 import org.slf4j.LoggerFactory
+import java.util.Random
+import org.wow.logger.PlayerMove
 
 public class LoginException(): Exception()
 
@@ -22,7 +23,7 @@ trait GameClient {
     fun login(username: String, password: String)
     fun startGame(): String
     fun endGame(gameId: String)
-    fun getMovesForPreviousTurn(gameId: String): List<SerializedMove>
+    fun getMovesForPreviousTurn(gameId: String): List<PlayerMove>
 }
 
 public class HttpGameClient(val client: HttpClient, val mapper: ObjectMapper, val url: String): GameClient {
@@ -50,7 +51,8 @@ public class HttpGameClient(val client: HttpClient, val mapper: ObjectMapper, va
      */
     override fun startGame(): String {
         var httpPost = HttpPost(url + "/training.html")
-        httpPost.setEntity(UrlEncodedFormEntity(listOf(BasicNameValuePair("botsCount", "1"),
+        var rand = Random()
+        httpPost.setEntity(UrlEncodedFormEntity(listOf(BasicNameValuePair("botsCount", (rand.nextInt(9)+1).toString()),
                 BasicNameValuePair("type", "3")), Consts.UTF_8))
         val httpResponse = client.execute(httpPost, context)
         httpPost.releaseConnection()
@@ -74,7 +76,7 @@ public class HttpGameClient(val client: HttpClient, val mapper: ObjectMapper, va
         stopGame.releaseConnection()
     }
 
-    override fun getMovesForPreviousTurn(gameId: String): List<SerializedMove> {
+    override fun getMovesForPreviousTurn(gameId: String): List<PlayerMove> {
         val statusRequest =
                 HttpGet(URIBuilder(url + "/game/viewData.html")
                         .setParameter("gameId", gameId)!!

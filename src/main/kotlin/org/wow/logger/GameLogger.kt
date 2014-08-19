@@ -9,7 +9,7 @@ import org.wow.http.GameClient
 
 
 data class SerializedGameTurn(val planets: List<SerializedPlanet> = arrayListOf(),
-                              var moves: List<SerializedMove> = arrayListOf())
+                              var moves: List<PlayerMove> = arrayListOf())
 
 data class SerializedPlanet(val id: String = "",
                             val owner: String = "",
@@ -17,9 +17,7 @@ data class SerializedPlanet(val id: String = "",
                             val `type`: PlanetType = PlanetType.TYPE_A,
                             val neighbours: List<String> = listOf())
 
-data class SerializedMove(val from: Int = 0, val to: Int = 9, val unitCount: Int = 9)
-
-data class PlayerActionsResponse(val actions: List<SerializedMove> = listOf())
+data class PlayerActionsResponse(val actions: List<PlayerMove> = listOf())
 
 data class GameTurnResponse(val turnNumber: Int = 0, val playersActions: PlayerActionsResponse = PlayerActionsResponse())
 
@@ -28,25 +26,30 @@ public class GameLogger(val serializer: ObjectMapper,
                         val gameId: String,
                         val client: GameClient): Logic {
 
-    var states: List<SerializedGameTurn> = arrayListOf()
+    var states: List<GameTurn> = arrayListOf()
+
+    /**
+     * Game turn contains world + moves.
+     * But moves could be requested only after this game turn
+     */
+    var lastWorld: Collection<Planet>? = null
 
     override fun step(world: Collection<Planet>?): MutableCollection<Move>? {
         if(world!!.empty) {     // end of the game
             return arrayListOf()
         }
-        if(states.last != null) {
-            states.last!!.moves = client.getMovesForPreviousTurn(gameId)
+        if(lastWorld != null) {
+            states = states.plus(GameTurn(lastWorld!!, client.getMovesForPreviousTurn(gameId)))
         }
-
-        val serializedWorld = SerializedGameTurn(world.map {
-            SerializedPlanet(it.getId()!!,it.getOwner()!!, it.getUnits(), it.getType()!!,
-                    it.getNeighbours()!!.map { it.getId()!! })
-        })
-        states = states.plus(serializedWorld)
+        lastWorld = world
         return arrayListOf()
     }
 
+    private fun serializePlanet(planet: Planet): SerializedPlanet = SerializedPlanet(planet.getId()!!,
+            planet.getOwner()!!,
+            planet.getUnits(), planet.getType()!!,
+            planet.getNeighbours()!!.map { it.getId()!! })
 
-
-    fun dump(): ByteArray = serializer.writeValueAsBytes(states)!!
+    fun dump(): ByteArray = serializer.writeValueAsBytes(states.
+            map { SerializedGameTurn(it.planets.map { serializePlanet(it) }, it.moves) })!!
 }

@@ -4,6 +4,7 @@ import com.epam.starwors.galaxy.Planet
 import org.apache.mahout.math.Vector
 import org.wow.learning.vectorizers.Vectorizer
 import org.wow.learning.categorizers.InOutMove
+import org.wow.learning.categorizers.inOutMoveFromInt
 
 public class InOutPlanetPredictor(val classifier: (Vector) -> Vector,
                                   val planetVectorizer: Vectorizer<Planet, Vector>
@@ -14,7 +15,7 @@ public class InOutPlanetPredictor(val classifier: (Vector) -> Vector,
         val vector = planetVectorizer.vectorize(input)
         val classification = classifier(vector)
         val maxValue = classification.maxValueIndex()
-        return org.wow.learning.categorizers.inOutMoveFromInt(maxValue)
+        return inOutMoveFromInt(maxValue)
     }
 
 }

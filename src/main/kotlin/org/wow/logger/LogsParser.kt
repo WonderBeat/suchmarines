@@ -6,7 +6,7 @@ import java.io.File
 
 public data class GameTurn(val planets: Collection<Planet>, val moves: List<PlayerMove>)
 
-public data class PlayerMove(val from: String, val to: String, unitCount: Int)
+public data class PlayerMove(val from: String = "", val to: String = "", val unitCount: Int = 0)
 
 fun serializedGameTurnToGameTurn(serialized: SerializedGameTurn): GameTurn {
     val moves = serialized.moves.map { PlayerMove(it.from.toString(), it.to.toString(), it.unitCount) }

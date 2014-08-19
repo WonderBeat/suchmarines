@@ -12,7 +12,7 @@ class LogParserTest extends Specification {
         given:
         def planetOne = new SerializedPlanet("12", "", 12, PlanetType.TYPE_A, ['13'])
         def planetTwo = new SerializedPlanet("13", "", 12, PlanetType.TYPE_B, ['12'])
-        def move = new SerializedMove(10, 11, 12)
+        def move = new PlayerMove("10", "11", 12)
 
 
         when:

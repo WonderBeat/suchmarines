@@ -10,5 +10,5 @@ public trait Evaluator {
     fun evaluate(playerName: String, world: GameTurn): Double
 
     fun difference(playerName: String, first: GameTurn, second: GameTurn): Double =
-            evaluate(playerName, second) - evaluate(playerName, first)
+        evaluate(playerName, second) - evaluate(playerName, first)
 }

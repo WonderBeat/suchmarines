@@ -20,7 +20,7 @@ class BestTransitionsFinderTest extends Specification {
 
         then:
         assert transitions != null
-        assert transitions.size() == 1
+        assert transitions.size() == 0, "Same state with no regeneration is not a best move"
     }
 
     def 'different worlds'() {
