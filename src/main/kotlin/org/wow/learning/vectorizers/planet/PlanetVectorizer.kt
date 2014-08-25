@@ -1,11 +1,11 @@
 package org.wow.learning.vectorizers.planet
 
-import org.wow.learning.vectorizers.Vectorizer
-import org.apache.mahout.math.Vector
 import com.epam.starwors.galaxy.Planet
 import org.wow.evaluation.transition.PlayerGameTurn
 import org.wow.logger.PlayerMove
 import org.apache.mahout.vectorizer.encoders.FeatureVectorEncoder
+import org.wow.learning.vectorizers.Vectorizer
+import org.apache.mahout.math.Vector
 import org.apache.mahout.math.RandomAccessSparseVector
 
 public data class PlanetTransition(val from: Planet,
@@ -15,7 +15,12 @@ public data class PlanetTransition(val from: Planet,
 data class FeatureExtractor(val encoder: FeatureVectorEncoder,val eval: (Planet) -> Double, val weight: Double)
 
 fun planetMoves(transition: PlayerGameTurn): List<PlanetTransition> {
-    val planetsThatMoves = transition.from.moves.fold(listOf<String>(), { (acc, item) ->
+    val nonSymmetricMoves = transition.from.moves.fold(listOf<PlayerMove>(), {(acc, move) ->
+        if(transition.from.moves.any { it.from == move.to &&
+                it.to == move.from && it.unitCount > move.unitCount })
+            acc else acc.plus(move)
+    })
+    val planetsThatMoves = nonSymmetricMoves.fold(listOf<String>(), { (acc, item) ->
         acc.plus(item.from).plus(item.to)}).toSet()
     return transition.from.planets
             .filter { it.getOwner() == transition.playerName  }
@@ -33,9 +38,6 @@ public class PlanetVectorizer(private val featuresExtractors: List<FeatureExtrac
         return featuresExtractors.withIndices()
                 .fold<Pair<Int, FeatureExtractor>, Vector>(RandomAccessSparseVector(featuresExtractors.size),
                         { (acc, extractor) ->
-//                            acc.set(extractor.first, extractor.second.eval(input) * extractor.second.weight); acc })
-                            extractor.second.encoder.addToVector(null: ByteArray?,
-                                    extractor.second.eval(input) * extractor.second.weight,
-                                    acc); acc })
+                            acc.set(extractor.first, extractor.second.eval(input) * extractor.second.weight); acc })
     }
 }
