@@ -19,11 +19,10 @@ possible combinations?
 
 * 08 aug - Dirty MVP created. Machine learning could play! Yey!
 * 19 aug - bot passed semifinals. 
-Heh. I don't know why. Was it a small DB or algo issue, but bot decided to defend all semifinal games. And passed 
-them =)  
+Heh. I don't know why. Was it a small DB or algo issue, but bot decided to defend during all semifinal games. And passed them =)  
 Here is a screenshot of a final game (2nd place):  
 ![much screenshot](https://raw.githubusercontent.com/WonderBeat/suchmarines/master/semifinal-screenshot.png)
-* 23 aug - final. Bot still wanted to play defend game. Heh. But it was so boring. We've implemented slightly different
+* 23 aug - final. Bot still wanted to play a defend game. Heh. But it was so boring. We've implemented slightly different
 strategy. So, finally, our bot made first aggressive moves with hardcoded algorithm. And then switched to machine 
 learning. We lost that game ;).
 
