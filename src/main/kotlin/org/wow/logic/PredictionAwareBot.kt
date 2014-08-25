@@ -30,7 +30,7 @@ public class PredictionAwareBot(val username: String,
             val couldSend = readyToSendPlanet.planet.percentUsers(readyToSendPlanet.predict.out)
             val leastPowerEnemy = readyToSendPlanet.planet.enemiesNeighbours().minBy { it.planetPower() }
             val leastPowerFriend = readyToSendPlanet.planet.friendsNeighbours().minBy { it.planetPower() }
-            val neutralBiggest = readyToSendPlanet.planet.neutralNeighbours().sortBy { it.getType()!!.getLimit() }.first
+            val neutralBiggest = readyToSendPlanet.planet.neutralNeighbours().sortBy { it.getType()!!.getLimit() }.last
             val requiresDefendNeighbours = requiresDefend.filter { readyToSendPlanet.planet.getNeighbours()!!.contains(it) }
 
             fun createDefendMove(unitsLeft: Int, planetToDefend: PlanetMovePredict): Move? {
