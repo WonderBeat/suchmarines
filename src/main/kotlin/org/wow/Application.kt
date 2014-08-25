@@ -41,7 +41,6 @@ import org.apache.mahout.classifier.sgd.OnlineLogisticRegression
 import java.util.Random
 import com.epam.starwors.galaxy.Move
 import org.wow.logic.UniformAttack
-import org.wow.logic.TrainOne
 
 public class Application() {
 
