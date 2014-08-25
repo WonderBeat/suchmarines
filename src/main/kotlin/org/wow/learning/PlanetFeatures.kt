@@ -24,8 +24,8 @@ fun Planet.friendsAroundPercentage(): Double {
 }
 
 fun Planet.neutralAroundPercentage(): Double {
-    val allUnits = this.getNeighbours()!!.sumUnits()
-    val neutral = this.neutralNeighbours().sumUnits()
+    val allUnits = this.getNeighbours()!!.size
+    val neutral = this.neutralNeighbours().size
     return when {
         allUnits == 0 -> 0.0
         else -> (100.0 * neutral) / allUnits
@@ -68,4 +68,4 @@ fun Planet.unitsAfterRegeneration(): Int {
     }
 }
 
-fun Planet.percentUsers(percent: Int): Int = ((this.getUnits() * percent).toDouble() / 100.0).toInt()
+fun Planet.percentUsers(percent: Int): Int = (((this.getUnits() * percent).toDouble() / 100.0) + 0.5).toInt()
