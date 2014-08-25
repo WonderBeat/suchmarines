@@ -38,11 +38,15 @@ import org.wow.learning.vectorizers.planet.planetMoves
 import com.epam.starwors.galaxy.Planet
 import org.apache.mahout.classifier.sgd.L1
 import org.apache.mahout.classifier.sgd.OnlineLogisticRegression
+import java.util.Random
+import com.epam.starwors.galaxy.Move
+import org.wow.logic.UniformAttack
+import org.wow.logic.TrainOne
 
 public class Application() {
 
     private val dbFile = "games.db"
-    private val username = "suchbotwow"
+    private val username = "suchbotwownotacat"
     private val dumpFolder = "dump/"
     private val gameUrl = "176.192.95.4"
     private val port = 10040
@@ -63,8 +67,8 @@ public class Application() {
             FeatureExtractor(ContinuousValueEncoder("enemies-around"), {s -> s.enemiesAroundPercentage()}, 1.0),
             FeatureExtractor(ContinuousValueEncoder("friends-around"), {s -> s.friendsAroundPercentage()}, 1.0),
             FeatureExtractor(ContinuousValueEncoder("neutral-around"), {s -> s.neutralAroundPercentage()}, 1.0),
-            FeatureExtractor(ContinuousValueEncoder("planet-size"), {s -> s.getType()!!.ordinal().toDouble()}, 9.0),
-            FeatureExtractor(ContinuousValueEncoder("neighbors"), {s -> s.getNeighbours()!!.size.toDouble()}, 20.0)
+            FeatureExtractor(ContinuousValueEncoder("planet-size"), {s -> s.getType()!!.ordinal().toDouble()}, 25.0),
+            FeatureExtractor(ContinuousValueEncoder("neighbors"), {s -> s.getNeighbours()!!.size.toDouble()}, 9.0)
     )
 
     val bestMovesInGameFinder = {
@@ -88,13 +92,13 @@ public class Application() {
 
     val httpGameClient = HttpGameClient(httpClient, jsonMapper, "http://" + gameUrl)
 
-
     fun start(login: String, password: String) {
         httpGameClient.login(login, password)
         val machine = createMachineBot()
         val gameId = httpGameClient.startGame()
         val gameLogger = GameLogger(jsonMapper, gameId , httpGameClient)
-        val game = SocketGame(gameUrl, port, key, machine.and(gameLogger))
+        val game = SocketGame(gameUrl, port, key,
+                machine.and(gameLogger))
         print("Running....")
         game.start()
         httpGameClient.endGame(gameId)
@@ -107,8 +111,7 @@ public class Application() {
         file.createNewFile();
         FileOutputStream(file).write(gameLogger.dump());
 
-        bestMovesInGameFinder(gameLogger.states).forEach {
-            machineLearner.learn(it) } // learn last game
+        bestMovesInGameFinder(gameLogger.states).forEach { machineLearner.learn(it) } // learn last game
         saveRegressionToFile()
     }
 
@@ -123,9 +126,8 @@ public class Application() {
         val categoriesCount = 201 // 0 - 200 inclusive
         val objectMapper = ObjectMapper()
         val regression = OnlineLogisticRegression(categoriesCount, planetFeaturesExtractors.size, L1())
-        regression.alpha(0.001)!!.learningRate(50.0)
         return when {
-            !FileSystemResource(dbFile).exists() && !allFilesInFolder(dumpFolder).empty -> {
+            !FileSystemResource(dbFile).exists() && !allDumpsInFolder(dumpFolder).empty -> {
                 val classifierFromDump = createClassifierFromDump(regression, objectMapper)
                 classifierFromDump
             }
@@ -140,7 +142,7 @@ public class Application() {
     fun createClassifierFromDump(regression: OnlineLogisticRegression, objectMapper: ObjectMapper):
             MachineLearner<PlanetTransition,
                     OnlineLogisticRegression> {
-        val fileBasedLearner = FileBasedLearner(env, allFilesInFolder(dumpFolder),
+        val fileBasedLearner = FileBasedLearner(env, allDumpsInFolder(dumpFolder),
                 LogsParser(objectMapper), bestMovesInGameFinder)
         val learner = MachineLearner(::inOutCategorizer, firstStateInTransitionVectorizer, regression)
         val machineLearnerPrepared = fileBasedLearner.learn(learner)
@@ -158,23 +160,14 @@ public class Application() {
 
 }
 
-
-
 fun main(args: Array<String>) {
     Application().start(args.get(0), args.get(1))
 }
 
-
-
 fun filterEmptyWorlds(delegate: Logic) = Logic { planets -> if(planets!!.empty) arrayListOf() else delegate.step(planets) }
 
-fun allFilesInFolder(folder: String):List<File> {
-    val list = File(folder).listFiles { it.extension.equals("dmp") }?.toArrayList()
-    return when {
-        list == null -> arrayListOf()
-        else -> list
-    }
-}
+fun allDumpsInFolder(folder: String):List<File> =
+    File(folder).listFiles { it.extension.equals("dmp") }?.toArrayList() ?: arrayListOf()
 
 fun Logic.and(other: Logic): Logic =
         Logic { planets-> this.step(planets)?.plus(other.step(planets)!!)?.toArrayList() }
