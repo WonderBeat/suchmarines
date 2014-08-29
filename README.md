@@ -31,3 +31,8 @@ There was a guess. Can we use machine learning without any experience with it?
 The answer is: "Yes, we can!". And that's great! 
 
 [![Build Status](https://travis-ci.org/WonderBeat/suchmarines.svg?branch=master)](https://travis-ci.org/WonderBeat/suchmarines)
+
+# Authors
+Denis Golovachev
+Nikita Derevyanko
+Aleksander Egorov
